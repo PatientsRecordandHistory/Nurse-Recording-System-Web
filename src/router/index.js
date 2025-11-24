@@ -33,7 +33,7 @@ const router = createRouter({
     },
     {
       path: '/print/:patientId/:recordId?',
-      name: 'print',
+      name: 'printview',
       component: () => import('../views/PrintView.vue'),
       meta: { requiresAuth: true },
     },
