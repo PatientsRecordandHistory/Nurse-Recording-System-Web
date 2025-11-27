@@ -1,8 +1,19 @@
 <template>
-  <div
-    class="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-red-50/20 font-poppins p-10"
-  >
-    <div class="max-w-7xl mx-auto">
+  <div class="min-h-screen flex font-poppins bg-gray-50 text-gray-900">
+    <!-- Sidebar -->
+    <SidebarComponent />
+
+    <!-- Main Content -->
+    <div class="main flex-1 ml-[280px] p-10 overflow-auto">
+      <!-- Back Button -->
+      <button
+        @click="goBack"
+        class="mb-6 px-6 py-3 bg-gray-600 text-white rounded-xl font-semibold hover:bg-gray-700 transition-all flex items-center gap-2"
+      >
+        <i class="fa-solid fa-arrow-left"></i>
+        Back to Patients
+      </button>
+
       <div class="Personalinfo bg-white rounded-2xl shadow-lg p-8 mb-8 border border-gray-100">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-4">
@@ -227,13 +238,21 @@
 import { useRoute, useRouter } from 'vue-router'
 import { usePatientRecord } from '@/stores/patientRecord'
 import { usePatientStore } from '@/stores/patientsStore'
-import { computed, ref } from 'vue'
+import { useAuthStore } from '@/stores/authStore'
+import { computed, ref, provide } from 'vue'
+import SidebarComponent from '@/components/SidebarComponent.vue'
 import RecordsHandler from '@/modals/RecordsHandler.vue'
 
 const route = useRoute()
 const router = useRouter()
 const patientsStore = usePatientStore()
 const patientRecord = usePatientRecord()
+const authStore = useAuthStore()
+
+// Provide dependencies to SidebarComponent
+provide('router', router)
+provide('route', route)
+provide('authStore', authStore)
 
 const patientId = Number(route.params.id)
 const searchQuery = ref('')
@@ -273,12 +292,16 @@ const formatDate = (dateString) => {
   })
 }
 
+const goBack = () => {
+  router.push({ name: 'home' })
+}
+
 const printAllRecords = () => {
   router.push({
     name: 'printview',
     params: {
-      patientId: patientId
-    }
+      patientId: patientId,
+    },
   })
 }
 
@@ -287,8 +310,8 @@ const printSingleRecord = (recordId) => {
     name: 'printview',
     params: {
       patientId: patientId,
-      recordId: recordId
-    }
+      recordId: recordId,
+    },
   })
 }
 

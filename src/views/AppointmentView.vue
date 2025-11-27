@@ -1,8 +1,10 @@
 <template>
-  <div
-    class="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-red-50/20 font-poppins p-10"
-  >
-    <div class="max-w-7xl mx-auto">
+  <div class="min-h-screen flex font-poppins bg-gray-50 text-gray-900">
+    <!-- Sidebar -->
+    <SidebarComponent />
+
+    <!-- Main Content -->
+    <div class="main flex-1 ml-[280px] p-10 overflow-auto">
       <div class="header-section bg-white rounded-2xl shadow-lg p-8 mb-8 border border-gray-100">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-4">
@@ -199,11 +201,22 @@
 <script setup>
 import { useAppointmentStore } from '@/stores/AppointmentStore'
 import { usePatientStore } from '@/stores/patientsStore'
+import { useAuthStore } from '@/stores/authStore'
+import { useRouter, useRoute } from 'vue-router'
+import SidebarComponent from '@/components/SidebarComponent.vue'
 import AppointmentHandler from '@/modals/AppoitmentHandler.vue'
-import { ref, computed } from 'vue'
+import { ref, computed, provide } from 'vue'
 
 const store = useAppointmentStore()
 const patientStore = usePatientStore()
+const authStore = useAuthStore()
+const router = useRouter()
+const route = useRoute()
+
+// Provide dependencies to SidebarComponent
+provide('router', router)
+provide('route', route)
+provide('authStore', authStore)
 
 const searchQuery = ref('')
 const showAppointmentModal = ref(false)
