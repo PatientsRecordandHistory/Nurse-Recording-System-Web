@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import { usePatientStore } from './patientsStore'
 import { useAuthStore } from './authStore.js'
+import { apiFetch } from '@/api.js'
 
 export const useAppointmentStore = defineStore('appointmentStore', () => {
   const patientStore = usePatientStore()
@@ -147,7 +148,7 @@ export const useAppointmentStore = defineStore('appointmentStore', () => {
 
   const fetchAppointments = async () => {
     try {
-      const response = await fetch('/api/appointments', { headers: getHeaders() })
+      const response = await apiFetch('/api/appointments', { headers: getHeaders() })
       if (!response.ok) throw new Error('Failed to fetch appointments')
       const apiAppointments = await response.json()
       appointments.value = apiAppointments.map(normalizeAppointment)
@@ -181,7 +182,7 @@ export const useAppointmentStore = defineStore('appointmentStore', () => {
     try {
       const newAppointmentId = generateAppointmentId()
       const payload = buildAppointmentPayload(appointmentData, newAppointmentId)
-      const response = await fetch('/api/appointments', {
+      const response = await apiFetch('/api/appointments', {
         method: 'POST',
         headers: getHeaders(),
         body: JSON.stringify(payload),
@@ -200,7 +201,7 @@ export const useAppointmentStore = defineStore('appointmentStore', () => {
   const editAppointment = async (id, updatedAppointment) => {
     try {
       const payload = buildAppointmentPayload(updatedAppointment, updatedAppointment.appointmentId)
-      const response = await fetch(`/api/appointments/${id}`, {
+      const response = await apiFetch(`/api/appointments/${id}`, {
         method: 'PUT',
         headers: getHeaders(),
         body: JSON.stringify(payload),
@@ -242,7 +243,7 @@ export const useAppointmentStore = defineStore('appointmentStore', () => {
 
   const deleteAppointment = async (id) => {
     try {
-      const response = await fetch(`/api/appointments/${id}`, {
+      const response = await apiFetch(`/api/appointments/${id}`, {
         method: 'DELETE',
         headers: getHeaders(),
       })

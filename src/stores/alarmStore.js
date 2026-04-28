@@ -7,6 +7,7 @@ import {
   showAlarmNotification,
   requestNotificationPermission,
 } from '@/composables/useAlarmNotification.js'
+import { apiFetch } from '@/api.js'
 
 export const useAlarmStore = defineStore('alarmStore', () => {
   const authStore = useAuthStore()
@@ -152,7 +153,7 @@ export const useAlarmStore = defineStore('alarmStore', () => {
   // ── Actions (REST PATCH) ─────────────────────────────────────────
   const updateAlarmState = async (deviceId, newState) => {
     try {
-      const response = await fetch(`/api/Alarm/${deviceId}`, {
+      const response = await apiFetch(`/api/Alarm/${deviceId}`, {
         method: 'PATCH',
         headers: getHeaders(),
         body: JSON.stringify({ State: newState }),

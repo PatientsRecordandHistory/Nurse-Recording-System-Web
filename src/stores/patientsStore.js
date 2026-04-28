@@ -1,6 +1,7 @@
 import { ref, computed, watch } from 'vue'
 import { defineStore } from 'pinia'
 import { useAuthStore } from './authStore.js'
+import { apiFetch } from '@/api.js'
 
 export const usePatientStore = defineStore('patientStore', () => {
   const authStore = useAuthStore()
@@ -50,7 +51,7 @@ export const usePatientStore = defineStore('patientStore', () => {
 
   const fetchPatients = async () => {
     try {
-      const response = await fetch('/api/patients', { headers: getHeaders() })
+      const response = await apiFetch('/api/patients', { headers: getHeaders() })
       if (!response.ok) throw new Error('Failed to fetch patients')
       const apiPatients = await response.json()
       patients.value = apiPatients.map(normalizePatient)
@@ -147,7 +148,7 @@ export const usePatientStore = defineStore('patientStore', () => {
 
   const addPatient = async (newPatient) => {
     try {
-      const response = await fetch('/api/patients', {
+      const response = await apiFetch('/api/patients', {
         method: 'POST',
         headers: getHeaders(),
         body: JSON.stringify(buildPayload(newPatient, false)),
@@ -185,7 +186,7 @@ export const usePatientStore = defineStore('patientStore', () => {
 
   const deletePatient = async (id) => {
     try {
-      const response = await fetch(`/api/patients/${id}`, {
+      const response = await apiFetch(`/api/patients/${id}`, {
         method: 'DELETE',
         headers: getHeaders(),
       })
@@ -202,7 +203,7 @@ export const usePatientStore = defineStore('patientStore', () => {
   const editPatient = async (id, updatedPatient) => {
     try {
       const payload = buildPayload(updatedPatient, true)
-      const response = await fetch(`/api/patients/${id}`, {
+      const response = await apiFetch(`/api/patients/${id}`, {
         method: 'PUT',
         headers: getHeaders(),
         body: JSON.stringify(payload),

@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import { useAuthStore } from './authStore.js'
+import { apiFetch } from '@/api.js'
 
 export const usePatientRecord = defineStore('patientRecord', () => {
   const authStore = useAuthStore()
@@ -57,7 +58,7 @@ export const usePatientRecord = defineStore('patientRecord', () => {
 
   const fetchRecords = async () => {
     try {
-      const response = await fetch('/api/PatientRecords', { headers: getHeaders() })
+      const response = await apiFetch('/api/PatientRecords', { headers: getHeaders() })
       if (!response.ok) throw new Error('Failed to fetch patient records')
       const data = await response.json()
       patientRecords.value = data.map(normalizeRecord)
@@ -135,7 +136,7 @@ export const usePatientRecord = defineStore('patientRecord', () => {
       normalized.RecordId = normalized.recordId
     }
     try {
-      const response = await fetch('/api/PatientRecords', {
+      const response = await apiFetch('/api/PatientRecords', {
         method: 'POST',
         headers: getHeaders(),
         body: JSON.stringify(buildRecordPayload(normalized, 0)),
@@ -154,7 +155,7 @@ export const usePatientRecord = defineStore('patientRecord', () => {
     const serverId = Number(id)
     const payload = buildRecordPayload(updatedRecord, serverId)
     try {
-      const response = await fetch(`/api/PatientRecords/${serverId}`, {
+      const response = await apiFetch(`/api/PatientRecords/${serverId}`, {
         method: 'PUT',
         headers: getHeaders(),
         body: JSON.stringify(payload),
@@ -199,7 +200,7 @@ export const usePatientRecord = defineStore('patientRecord', () => {
     const payload = buildRecordPayload(patientRecords.value[index], serverId)
 
     try {
-      const response = await fetch(`/api/PatientRecords/${serverId}`, {
+      const response = await apiFetch(`/api/PatientRecords/${serverId}`, {
         method: 'PUT',
         headers: getHeaders(),
         body: JSON.stringify(payload),
@@ -235,7 +236,7 @@ export const usePatientRecord = defineStore('patientRecord', () => {
       return false
     }
     try {
-      const response = await fetch(`/api/PatientRecords/${serverId}`, {
+      const response = await apiFetch(`/api/PatientRecords/${serverId}`, {
         method: 'DELETE',
         headers: getHeaders(),
       })

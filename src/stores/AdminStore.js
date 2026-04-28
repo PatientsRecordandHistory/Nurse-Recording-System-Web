@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { useAuthStore } from '@/stores/authStore'
+import { apiFetch } from '@/api.js'
 
 export const useAdminStore = defineStore('adminStore', () => {
   const authStore = useAuthStore()

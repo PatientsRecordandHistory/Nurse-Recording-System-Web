@@ -100,7 +100,8 @@ export const useAuthStore = defineStore('authStore', () => {
       ...(options.headers ?? {}),
     }
 
-    const response = await fetch(url, { ...options, headers })
+    const fullUrl = `${import.meta.env.VITE_API_BASE_URL}${url}`
+    const response = await apiFetchetch(fullUrl, { ...options, headers })
 
     if (response.status === 401) {
       clearSession()
@@ -114,7 +115,7 @@ export const useAuthStore = defineStore('authStore', () => {
   const login = async () => {
     try {
       console.log('Login attempt:', formLogin.value)
-      const response = await fetch('/api/auth/login', {
+      const response = await apiFetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formLogin.value),
@@ -150,7 +151,7 @@ export const useAuthStore = defineStore('authStore', () => {
 
   const logout = async () => {
     try {
-      await fetch('/api/auth/logout', {
+      await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/logout`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       })

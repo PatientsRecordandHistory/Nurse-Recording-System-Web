@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import { useAuthStore } from './authStore.js'
+import { apiFetch } from '@/api.js'
 
 export const useFollowupStore = defineStore('followupStore', () => {
   const authStore = useAuthStore()
@@ -59,7 +60,7 @@ export const useFollowupStore = defineStore('followupStore', () => {
     }
 
     try {
-      const response = await fetch('/api/followups', {
+      const response = await apiFetch('/api/followups', {
         headers: getHeaders(),
       })
 
@@ -121,7 +122,7 @@ export const useFollowupStore = defineStore('followupStore', () => {
   const addFollowup = async (newFollowup) => {
     try {
       const payload = buildFollowupPayload(newFollowup, 0)
-      const response = await fetch('/api/followups', {
+      const response = await apiFetch('/api/followups', {
         method: 'POST',
         headers: getHeaders(),
         body: JSON.stringify(payload),
@@ -150,7 +151,7 @@ export const useFollowupStore = defineStore('followupStore', () => {
     }
 
     try {
-      const response = await fetch(`/api/followups/${numericId}`, {
+      const response = await apiFetch(`/api/followups/${numericId}`, {
         method: 'DELETE',
         headers: getHeaders(),
       })
@@ -177,7 +178,7 @@ export const useFollowupStore = defineStore('followupStore', () => {
     const payload = buildFollowupPayload(updatedFollowup, serverID)
 
     try {
-      const response = await fetch(`/api/followups/${serverID}`, {
+      const response = await apiFetch(`/api/followups/${serverID}`, {
         method: 'PUT',
         headers: getHeaders(),
         body: JSON.stringify(payload),

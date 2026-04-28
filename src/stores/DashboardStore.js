@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { useAuthStore } from './authStore.js'
+import { apiFetch } from '@/api.js'
 
 export const useDashboardStore = defineStore('dashboardStore', () => {
   const authStore = useAuthStore()
@@ -22,7 +23,7 @@ export const useDashboardStore = defineStore('dashboardStore', () => {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch('/api/dashboard/stats', {
+      const response = await apiFetch('/api/dashboard/stats', {
         headers: getHeaders(),
       })
       if (!response.ok) throw new Error('Failed to fetch dashboard stats')
