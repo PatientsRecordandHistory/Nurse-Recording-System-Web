@@ -176,7 +176,7 @@
         </div>
 
         <!-- Records as a clean list table -->
-        <div class="divide-y divide-gray-50">
+        <div class="divide-y divide-gray-50 max-h-[320px] overflow-y-auto custom-scroll">
           <div
             v-for="record in recentRecords"
             :key="record.id"
