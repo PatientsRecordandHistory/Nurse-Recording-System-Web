@@ -143,7 +143,7 @@
             placeholder="09123456789"
             autocomplete="off"
             required
-            maxlength="11"
+            maxlength="13"
             class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#2933FF]/50 focus:border-transparent transition-all duration-300 text-gray-800 placeholder-gray-400"
             :class="store.formErrors.phone ? 'border-red-400 focus:ring-red-400/50' : ''"
           />
