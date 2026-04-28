@@ -15,17 +15,27 @@
       </div>
     </div>
 
-    <!-- User Profile Section -->
-    <div class="user-profile p-6 border-b border-gray-200">
+    <!-- User Profile Section — clickable to edit -->
+    <div
+      class="user-profile p-6 border-b border-gray-200 cursor-pointer group transition-all hover:bg-gradient-to-r hover:from-[#2933FF]/5 hover:to-[#FF5451]/5"
+      @click="openEditProfile"
+      title="Click to edit your profile"
+    >
       <div class="flex items-center gap-3">
         <div
-          class="w-12 h-12 rounded-full bg-gradient-to-r from-[#2933FF] to-[#FF5451] flex items-center justify-center text-white font-bold shadow-lg"
+          class="w-12 h-12 rounded-full bg-gradient-to-r from-[#2933FF] to-[#FF5451] flex items-center justify-center text-white font-bold shadow-lg flex-shrink-0 transition-transform group-hover:scale-105"
         >
           {{ userInitials }}
         </div>
         <div class="flex-1 min-w-0">
-          <h3 class="text-sm font-bold text-gray-800 truncate">{{ userName }}</h3>
+          <h3 class="text-sm font-bold text-gray-800 truncate group-hover:text-[#2933FF] transition-colors">
+            {{ userName }}
+          </h3>
           <p class="text-xs text-gray-500 truncate">{{ userEmail }}</p>
+        </div>
+        <!-- Edit hint icon -->
+        <div class="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+          <i class="fa-solid fa-pen text-[#2933FF] text-xs"></i>
         </div>
       </div>
     </div>
@@ -75,15 +85,26 @@
       </button>
     </div>
   </div>
+
+  <!-- Edit Profile Modal -->
+  <EditProfileModal
+    v-if="showEditProfile"
+    @modalClose="closeEditProfile"
+  />
 </template>
 
 <script setup>
-import { computed, inject } from 'vue'
+import { ref, computed, inject } from 'vue'
+import { useAdminStore } from '@/stores/AdminStore'
+import EditProfileModal from '@/modals/EditProfileModal.vue'
 
 // Use inject to get router and route from parent
 const router = inject('router')
 const route = inject('route')
 const authStore = inject('authStore')
+
+const adminStore = useAdminStore()
+const showEditProfile = ref(false)
 
 const navigationItems = [
   {
@@ -153,6 +174,15 @@ const handleLogout = async () => {
   if (router) {
     router.push({ name: 'login' })
   }
+}
+
+const openEditProfile = () => {
+  adminStore.prefillForm()
+  showEditProfile.value = true
+}
+
+const closeEditProfile = () => {
+  showEditProfile.value = false
 }
 </script>
 
