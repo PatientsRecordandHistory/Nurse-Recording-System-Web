@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import { useAuthStore } from './authStore.js'
+import { useFollowupStore } from './FollowupStore.js'
 import { apiFetch } from '@/api.js'
 
 export const usePatientRecord = defineStore('patientRecord', () => {
@@ -233,8 +234,18 @@ export const usePatientRecord = defineStore('patientRecord', () => {
     const serverId = Number(id ?? 0)
     if (!serverId) {
       console.error('deleteRecord: invalid id', id)
-      return false
+      return { success: false, blocked: false }
     }
+
+    // Check for linked follow-ups
+    const followupStore = useFollowupStore()
+    const hasFollowups = followupStore.followups.some(
+      (f) => Number(f.recordId ?? f.RecordId) === serverId,
+    )
+    if (hasFollowups) {
+      return { success: false, blocked: true, reason: 'This record has follow-ups. Please delete all follow-ups first before deleting this record.' }
+    }
+
     try {
       const response = await apiFetch(`/api/PatientRecords/${serverId}`, {
         method: 'DELETE',
@@ -242,10 +253,10 @@ export const usePatientRecord = defineStore('patientRecord', () => {
       })
       if (!response.ok) throw new Error('Failed to delete record')
       patientRecords.value = patientRecords.value.filter((r) => Number(r.id ?? r.Id) !== serverId)
-      return true
+      return { success: true, blocked: false }
     } catch (error) {
       console.error('Error deleting record:', error)
-      return false
+      return { success: false, blocked: false }
     }
   }
 
