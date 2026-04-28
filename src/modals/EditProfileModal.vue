@@ -156,7 +156,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { useAdminStore } from '@/stores/adminStore'
+import { useAdminStore } from '@/stores/AdminStore'
 import { useAuthStore } from '@/stores/authStore'
 
 const emit = defineEmits(['modalClose'])
