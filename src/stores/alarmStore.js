@@ -15,14 +15,6 @@ export const useAlarmStore = defineStore('alarmStore', () => {
 
   const alarmStopFns = {}
 
-  const getHeaders = () => {
-    const token = localStorage.getItem('token')
-    return {
-      'Content-Type': 'application/json',
-      ...(token && { Authorization: `Bearer ${token}` }),
-    }
-  }
-
   const getDeviceState = (deviceId) => {
     if (!devices.value[deviceId]) devices.value[deviceId] = { rawState: 0 }
     return devices.value[deviceId]
@@ -38,16 +30,12 @@ export const useAlarmStore = defineStore('alarmStore', () => {
     return s >= 1 && s <= 3
   }
 
-  // ── Normalise state from either backend ──────────────────────────
-  // Old backend sends State as string: "Idle","Calling","Coming","Ended"
-  // New backend sends State as int:     0, 1, 2, 3
   const normaliseState = (raw) => {
     if (typeof raw === 'number') return raw
     const map = { idle: 0, calling: 1, coming: 2, ended: 3 }
     return map[String(raw).toLowerCase()] ?? 0
   }
 
-  // ── Sound helpers ─────────────────────────────────────────────────
   const stopAlarm = (deviceId) => {
     if (alarmStopFns[deviceId]) {
       alarmStopFns[deviceId]()
@@ -60,7 +48,6 @@ export const useAlarmStore = defineStore('alarmStore', () => {
     try {
       alarmStopFns[deviceId] = startAlarmSound()
     } catch {
-      // AudioContext blocked — start on first gesture
       const resume = () => {
         if (!alarmStopFns[deviceId]) {
           try {
@@ -75,7 +62,6 @@ export const useAlarmStore = defineStore('alarmStore', () => {
     }
   }
 
-  // ── Handle any incoming alarm payload ────────────────────────────
   const handleAlarm = (alarm, showNotif = true) => {
     const id = alarm.DeviceId ?? alarm.deviceId
     if (id == null) return
@@ -100,7 +86,6 @@ export const useAlarmStore = defineStore('alarmStore', () => {
     }
   }
 
-  // ── SignalR hub connection ────────────────────────────────────────
   let connection = null
 
   const buildConnection = () => {
@@ -121,13 +106,8 @@ export const useAlarmStore = defineStore('alarmStore', () => {
 
     connection = buildConnection()
 
-    // New backend
     connection.on('AlarmUpdated', (alarm) => handleAlarm(alarm, true))
-
-    // Old backend (State is string here)
     connection.on('ReceiveStateChange', (alarm) => handleAlarm(alarm, true))
-
-    // Snapshot — no notification, just restore state + sound if needed
     connection.on('AlarmSnapshot', (alarms) => {
       const list = Array.isArray(alarms) ? alarms : [alarms]
       list.forEach((alarm) => handleAlarm(alarm, false))
@@ -150,12 +130,10 @@ export const useAlarmStore = defineStore('alarmStore', () => {
     devices.value = {}
   }
 
-  // ── Actions (REST PATCH) ─────────────────────────────────────────
   const updateAlarmState = async (deviceId, newState) => {
     try {
       const response = await apiFetch(`/api/Alarm/${deviceId}`, {
         method: 'PATCH',
-        headers: getHeaders(),
         body: JSON.stringify({ State: newState }),
       })
       if (!response.ok) throw new Error('Failed to update alarm')
