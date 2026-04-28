@@ -87,13 +87,11 @@
             :class="record.closed ? 'border-gray-200 opacity-80' : 'border-gray-100'"
             @click="goToFollowup(record)"
           >
-            <!-- Closed overlay -->
             <div
               v-if="record.closed"
               class="absolute inset-0 bg-gray-50/40 pointer-events-none z-0 rounded-2xl"
             ></div>
 
-            <!-- Top accent bar -->
             <div
               class="h-1.5 w-full transition-opacity duration-300"
               :class="
@@ -104,7 +102,6 @@
             ></div>
 
             <div class="relative z-10 p-6 flex flex-col flex-1">
-              <!-- Header -->
               <div class="flex items-start justify-between mb-4">
                 <div class="flex items-center gap-3 min-w-0 flex-1">
                   <div
@@ -131,7 +128,6 @@
                   </div>
                 </div>
 
-                <!-- Action buttons -->
                 <div class="flex gap-1.5 ml-2 flex-shrink-0" @click.stop>
                   <span
                     v-if="record.closed"
@@ -183,7 +179,6 @@
                 </div>
               </div>
 
-              <!-- Content rows -->
               <div class="space-y-3 flex-1 mb-4">
                 <div v-if="record.symptom" class="flex items-start gap-2.5">
                   <span
@@ -228,7 +223,6 @@
                 </div>
               </div>
 
-              <!-- Footer -->
               <div class="flex items-center justify-between pt-3 border-t border-gray-100">
                 <p class="text-xs text-gray-400 flex items-center gap-1.5">
                   <i class="fa-solid fa-calendar text-[10px]"></i>
@@ -245,15 +239,14 @@
                     :class="record.closed ? 'fa-solid fa-ban' : 'fa-solid fa-rotate-right'"
                   ></i>
                   <span v-if="record.closed">Closed</span>
-                  <span v-else
-                    >{{ getFollowupCount(record.id) }} follow-up{{
+                  <span v-else>
+                    {{ getFollowupCount(record.id) }} follow-up{{
                       getFollowupCount(record.id) !== 1 ? 's' : ''
-                    }}</span
-                  >
+                    }}
+                  </span>
                 </span>
               </div>
 
-              <!-- Hover hint -->
               <p
                 v-if="!record.closed"
                 class="text-xs text-center text-[#2933FF] font-semibold mt-3 opacity-0 group-hover:opacity-100 transition-opacity"
@@ -279,32 +272,51 @@
       v-if="showDeleteModal"
       class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 font-poppins"
     >
-      <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full border border-gray-100 p-6">
-        <div class="flex items-center gap-3 mb-4">
-          <div class="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center">
-            <i class="fa-solid fa-exclamation-triangle text-xl text-red-500"></i>
-          </div>
-          <div>
-            <h3 class="text-lg font-bold text-gray-800">Delete Record</h3>
-            <p class="text-sm text-gray-400">This action cannot be undone</p>
-          </div>
+      <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full border border-gray-100 p-8">
+        <!-- Icon -->
+        <div class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5"
+          :class="deleteModal.blocked ? 'bg-orange-50' : 'bg-red-50'">
+          <i class="text-2xl"
+            :class="deleteModal.blocked ? 'fa-solid fa-ban text-orange-500' : 'fa-solid fa-triangle-exclamation text-red-500'"></i>
         </div>
-        <p class="text-gray-600 text-sm mb-6">
-          Delete record for
-          <span class="font-semibold text-gray-800">{{ recordToDelete?.diagnosis }}</span
-          >?
+
+        <!-- Title -->
+        <h3 class="text-xl font-bold text-gray-800 text-center mb-2">
+          {{ deleteModal.blocked ? 'Cannot Delete Record' : 'Delete Record' }}
+        </h3>
+        <p class="text-sm text-gray-500 text-center mb-6">
+          {{ deleteModal.blocked ? 'This record is linked to existing follow-ups.' : 'This action cannot be undone.' }}
         </p>
-        <div class="flex justify-end gap-3">
+
+        <!-- Blocked reason -->
+        <div v-if="deleteModal.blocked" class="bg-orange-50 border border-orange-100 rounded-xl px-4 py-3 mb-6">
+          <p class="text-sm text-orange-600 text-center font-medium">
+            <i class="fa-solid fa-circle-info mr-1"></i>
+            Please delete all follow-ups for this record first before deleting it.
+          </p>
+        </div>
+
+        <!-- Normal confirm message -->
+        <p v-else class="text-gray-600 text-sm text-center mb-6">
+          Delete record for
+          <span class="font-semibold text-gray-800">{{ recordToDelete?.diagnosis }}</span>?
+        </p>
+
+        <!-- Buttons -->
+        <div class="flex gap-3">
           <button
             @click="cancelDelete"
-            class="px-5 py-2.5 bg-gray-100 text-gray-700 text-sm font-semibold rounded-xl hover:bg-gray-200 active:scale-95 transition-all"
+            class="flex-1 py-3 bg-gray-100 text-gray-700 text-sm font-semibold rounded-xl hover:bg-gray-200 transition-all active:scale-95"
           >
-            Cancel
+            <i class="fa-solid fa-xmark mr-1"></i>
+            {{ deleteModal.blocked ? 'Close' : 'Cancel' }}
           </button>
           <button
+            v-if="!deleteModal.blocked"
             @click="handleDelete"
-            class="px-5 py-2.5 bg-gradient-to-r from-red-500 to-red-600 text-white text-sm font-semibold rounded-xl hover:shadow-lg hover:scale-105 active:scale-95 transition-all"
+            class="flex-1 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white text-sm font-semibold rounded-xl hover:shadow-lg transition-all active:scale-95"
           >
+            <i class="fa-solid fa-trash mr-1"></i>
             Delete
           </button>
         </div>
@@ -339,6 +351,7 @@ const searchQuery = ref('')
 const showRecordModal = ref(false)
 const showDeleteModal = ref(false)
 const recordToDelete = ref(null)
+const deleteModal = ref({ blocked: false, reason: '' })
 
 const patient = computed(() =>
   patientsStore.patients.find((p) => Number(p.id ?? p.Id) === patientId),
@@ -414,18 +427,22 @@ const handleToggleClosed = async (record) => {
 
 const confirmDelete = (record) => {
   recordToDelete.value = record
+  const hasFollowups = followupStore.followups.some(
+    (f) => Number(f.recordId ?? f.RecordId) === Number(record.id ?? record.Id)
+  )
+  deleteModal.value = { blocked: hasFollowups, reason: '' }
   showDeleteModal.value = true
 }
 
 const cancelDelete = () => {
   recordToDelete.value = null
   showDeleteModal.value = false
+  deleteModal.value = { blocked: false, reason: '' }
 }
 
 const handleDelete = async () => {
   if (recordToDelete.value) {
-    const id = recordToDelete.value.id ?? recordToDelete.value.Id
-    await patientRecord.deleteRecord(id)
+    await patientRecord.deleteRecord(recordToDelete.value.id ?? recordToDelete.value.Id)
     showDeleteModal.value = false
     recordToDelete.value = null
   }
