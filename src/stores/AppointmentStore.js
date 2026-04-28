@@ -9,6 +9,9 @@ export const useAppointmentStore = defineStore('appointmentStore', () => {
   const authStore = useAuthStore()
   const appointments = ref([])
 
+  // ── Auto-close interval ────────────────────────────────────────────────────
+  let autoCloseIntervalId = null
+
   const getHeaders = () => {
     const token = localStorage.getItem('token')
     return {
@@ -85,23 +88,31 @@ export const useAppointmentStore = defineStore('appointmentStore', () => {
     return patient ?? null
   })
 
+  /** Strip any ISO time suffix, returning only "YYYY-MM-DD" */
+  const normalizeDate = (raw) => {
+    if (!raw) return ''
+    return String(raw).split('T')[0]
+  }
+
+  /** Ensure time is "HH:mm" — strips seconds if present e.g. "14:30:00" → "14:30" */
+  const normalizeTime = (raw) => {
+    if (!raw) return '00:00'
+    const parts = String(raw).split(':')
+    return `${parts[0].padStart(2, '0')}:${(parts[1] ?? '00').padStart(2, '0')}`
+  }
+
   const normalizeAppointment = (a) => ({
     ...a,
     id: a.id ?? a.Id,
     appointmentId: a.appointmentId ?? a.AppointmentId,
     patientId: a.patientId ?? a.PatientId,
-    date: a.date ?? a.Date,
-    time: a.time ?? a.Time,
+    date: normalizeDate(a.date ?? a.Date),
+    time: normalizeTime(a.time ?? a.Time),
     reason: a.reason ?? a.Reason,
     status: a.status ?? a.Status,
-    // Also embed a resolved patient name so cards never need to re-lookup
     _patientName: resolvePatientName(a.patientId ?? a.PatientId),
   })
 
-  /**
-   * Resolve a patient name from the patientStore using the numeric id.
-   * Handles both camelCase and PascalCase from the API.
-   */
   function resolvePatientName(patientId) {
     if (!patientId) return 'Unknown Patient'
     const p = patientStore.patients.find((pt) => String(pt.id ?? pt.Id) === String(patientId))
@@ -158,23 +169,146 @@ export const useAppointmentStore = defineStore('appointmentStore', () => {
     }
   }
 
+  /**
+   * Checks all non-Closed appointments and marks any whose date+time has
+   * already passed as "Closed" — both locally and via the API (PUT request).
+   *
+   * Key fixes:
+   * - Uses full date+time comparison (not just date) to avoid premature closure.
+   * - Updates local ref optimistically so the UI responds immediately.
+   * - Builds a minimal, correct PUT payload directly here instead of reusing
+   *   buildAppointmentPayload (which depends on selectedPatientId state that
+   *   may not be set during background polling).
+   * - Reverts the optimistic update if the API call fails.
+   */
+  const autoCloseExpiredAppointments = async () => {
+const now = Date.now();
+  const GRACE_PERIOD_MS = 5 * 60 * 1000; // 5-minute grace period
+
+  const toClose = appointments.value.filter((a) => {
+    if (a.status === 'Closed') return false;
+
+    const date = a.date || '';
+    const time = a.time || '00:00';
+    if (!date) return false;
+
+    // FIX: Use a space instead of 'T' to ensure the browser parses this as LOCAL time
+    const dt = new Date(`${date} ${time}`); 
+    if (isNaN(dt.getTime())) return false;
+
+    // Match backend logic: only close if it's older than 5 minutes ago
+    return (dt.getTime() + GRACE_PERIOD_MS) < now;
+  })
+
+    if (toClose.length === 0) return
+
+    console.log(`Auto-closing ${toClose.length} expired appointment(s)…`)
+
+    // ── Optimistic local update first so the UI reflects it immediately ──────
+    toClose.forEach((a) => {
+      const id = a.id ?? a.Id
+      const idx = appointments.value.findIndex((x) => (x.id ?? x.Id) === id)
+      if (idx !== -1) {
+        appointments.value[idx] = { ...appointments.value[idx], status: 'Closed' }
+      }
+    })
+
+    // ── Then persist each closure to the API ─────────────────────────────────
+    await Promise.all(
+      toClose.map(async (a) => {
+        const id = Number(a.id ?? a.Id)
+        const originalStatus = a.status ?? a.Status ?? 'Pending'
+
+        // Build the PUT payload directly — do NOT rely on selectedPatientId
+        // since this runs in a background interval with no UI context.
+        const patientId = Number(a.patientId ?? a.PatientId ?? 0)
+        const patient = patientStore.patients.find(
+          (p) => Number(p.id ?? p.Id) === patientId,
+        )
+        const payload = {
+          Id: id,
+          AppointmentId: a.appointmentId ?? a.AppointmentId ?? '',
+          PatientId: patientId,
+          Patient: patient
+            ? {
+                Id: patient.id ?? patient.Id,
+                Firstname: patient.firstname ?? patient.Firstname ?? '',
+                Middlename: patient.middlename ?? patient.Middlename ?? '',
+                Lastname: patient.lastname ?? patient.Lastname ?? '',
+                Address: patient.address ?? patient.Address ?? '',
+                Password: patient.password ?? patient.Password ?? '',
+                Facebook: patient.facebook ?? patient.Facebook ?? '',
+                Email: patient.email ?? patient.Email ?? '',
+                EmergencyContact: patient.emergencyContact ?? patient.EmergencyContact ?? '',
+              }
+            : null,
+          Date: a.date ?? a.Date,
+          Time: a.time ?? a.Time,
+          Reason: a.reason ?? a.Reason ?? '',
+          Status: 'Closed',
+        }
+
+        try {
+          const response = await apiFetch(`/api/appointments/${id}`, {
+            method: 'PUT',
+            headers: getHeaders(),
+            body: JSON.stringify(payload),
+          })
+
+          if (response.ok) {
+            console.log(`✓ Auto-closed appointment #${id}`)
+          } else {
+            const errText = await response.text().catch(() => response.status)
+            console.warn(`✗ Failed to auto-close appointment #${id}: ${errText} — reverting`)
+            // Revert optimistic update on failure
+            const idx = appointments.value.findIndex((x) => (x.id ?? x.Id) === id)
+            if (idx !== -1) {
+              appointments.value[idx] = { ...appointments.value[idx], status: originalStatus }
+            }
+          }
+        } catch (err) {
+          console.error(`✗ Network error auto-closing appointment #${id}:`, err)
+          // Revert on network error too
+          const idx = appointments.value.findIndex((x) => (x.id ?? x.Id) === id)
+          if (idx !== -1) {
+            appointments.value[idx] = { ...appointments.value[idx], status: originalStatus }
+          }
+        }
+      }),
+    )
+  }
+
   watch(
     () => authStore.isAuthenticated,
     (isAuth) => {
-      if (isAuth) fetchAppointments()
-      else appointments.value = []
+      if (isAuth) {
+        fetchAppointments()
+        // Poll every minute for appointments that have crossed into the past
+        autoCloseIntervalId = setInterval(autoCloseExpiredAppointments, 60_000)
+      } else {
+        appointments.value = []
+        if (autoCloseIntervalId) {
+          clearInterval(autoCloseIntervalId)
+          autoCloseIntervalId = null
+        }
+      }
     },
     { immediate: true },
   )
 
-  // Re-resolve patient names whenever the patients list loads/changes
+  // Re-resolve patient names whenever the patients list loads/changes.
+  // Also triggers auto-close here — guarantees patientStore.patients is
+  // populated before we try to look up Patient objects for the PUT payload.
   watch(
     () => patientStore.patients,
-    () => {
+    (patients) => {
       appointments.value = appointments.value.map((a) => ({
         ...a,
         _patientName: resolvePatientName(a.patientId),
       }))
+      if (patients.length > 0) {
+        autoCloseExpiredAppointments()
+      }
     },
   )
 
