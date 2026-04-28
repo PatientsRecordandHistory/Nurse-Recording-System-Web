@@ -27,7 +27,16 @@ export const usePatientStore = defineStore('patientStore', () => {
     }
   }
 
-  const normalizePatient = (p) => ({
+const normalizePatient = (p) => {
+  // Extract the raw contact value first
+  let contact = p.EmergencyContact ?? p.emergencyContact ?? ''
+  
+  // If the number starts with '0', convert it to '+63'
+  if (String(contact).startsWith('0')) {
+    contact = '+63' + String(contact).substring(1)
+  }
+
+  return {
     id: p.Id ?? p.id ?? null,
     Id: p.Id ?? p.id ?? null,
     firstname: p.Firstname ?? p.firstname ?? '',
@@ -42,11 +51,12 @@ export const usePatientStore = defineStore('patientStore', () => {
     Address: p.Address ?? p.address ?? '',
     facebook: p.Facebook ?? p.facebook ?? '',
     Facebook: p.Facebook ?? p.facebook ?? '',
-    emergencyContact: p.EmergencyContact ?? p.emergencyContact ?? '',
-    EmergencyContact: p.EmergencyContact ?? p.emergencyContact ?? '',
+    emergencyContact: contact,
+    EmergencyContact: contact,
     password: p.Password ?? p.password ?? '',
     Password: p.Password ?? p.password ?? '',
-  })
+  }
+}
 
   const fetchPatients = async () => {
     try {
@@ -114,20 +124,35 @@ export const usePatientStore = defineStore('patientStore', () => {
     clearFormErrors()
   }
 
-  const filteredpatients = computed(() => {
-    const term = searchterm.value.toLowerCase()
-    if (!term) return patients.value
-    return patients.value.filter((patient) => {
-      const fullName =
-        `${patient.firstname} ${patient.middlename} ${patient.lastname}`.toLowerCase()
-      return (
-        fullName.includes(term) ||
-        String(patient.email).toLowerCase().includes(term) ||
-        String(patient.emergencyContact).toLowerCase().includes(term) ||
-        String(patient.address).toLowerCase().includes(term)
-      )
-    })
+  watch(
+  () => formPatient.value.emergencyContact,
+  (newVal) => {
+    if (newVal && String(newVal).startsWith('0')) {
+      // Replaces the leading '0' with '+63'
+      formPatient.value.emergencyContact = '+63' + String(newVal).substring(1)
+    }
+  }
+)
+
+const filteredpatients = computed(() => {
+  const term = searchterm.value.toLowerCase().trim()
+  if (!term) return patients.value
+
+  return patients.value.filter((p) => {
+    const fullName = `${p.firstname} ${p.middlename} ${p.lastname}`.toLowerCase()
+    const email = (p.email || '').toLowerCase()
+    const contact = String(p.emergencyContact || '')
+
+    const searchContact = term.startsWith('0') ? '+63' + term.substring(1) : term
+
+    return (
+      fullName.includes(term) ||
+      email.includes(term) ||
+      contact.includes(term) ||
+      contact.includes(searchContact)
+    )
   })
+})
 
   const buildPayload = (patient, includeId = false) => {
     const payload = {
@@ -260,15 +285,26 @@ export const usePatientStore = defineStore('patientStore', () => {
     return true
   }
 
-  const phoneVerification = (newPatient) => {
-    const phoneNumber = String(newPatient.emergencyContact ?? '')
-    if (phoneNumber.length !== 11) {
-      formErrors.value.phone = 'Emergency contact must be exactly 11 digits.'
+const phoneVerification = (newPatient) => {
+  const phoneNumber = String(newPatient.emergencyContact ?? '')
+  
+  // If it starts with +63, it should be 13 characters (+63 + 10 digits)
+  if (phoneNumber.startsWith('+63')) {
+    if (phoneNumber.length !== 13) {
+      formErrors.value.phone = 'Emergency contact must be +63 followed by 10 digits.'
       return false
     }
-    formErrors.value.phone = ''
-    return true
+  } else {
+    // Fallback validation if the watcher hasn't triggered or for different formats
+    if (phoneNumber.length !== 11) {
+      formErrors.value.phone = 'Emergency contact must be 11 digits starting with 0.'
+      return false
+    }
   }
+
+  formErrors.value.phone = ''
+  return true
+}
 
   const submitPatient = async () => {
     clearFormErrors()
