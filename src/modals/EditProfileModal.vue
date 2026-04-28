@@ -64,9 +64,7 @@
 
         <!-- Username -->
         <div>
-          <label class="block text-xs font-semibold text-gray-600 mb-1.5 ml-1">
-            Username
-          </label>
+          <label class="block text-xs font-semibold text-gray-600 mb-1.5 ml-1"> Username </label>
           <div class="relative">
             <div
               class="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center"
@@ -125,7 +123,10 @@
               @click="showPassword = !showPassword"
               class="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
             >
-              <i :class="showPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'" class="text-xs"></i>
+              <i
+                :class="showPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"
+                class="text-xs"
+              ></i>
             </button>
           </div>
         </div>

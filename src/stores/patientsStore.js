@@ -116,7 +116,8 @@ export const usePatientStore = defineStore('patientStore', () => {
     const term = searchterm.value.toLowerCase()
     if (!term) return patients.value
     return patients.value.filter((patient) => {
-      const fullName = `${patient.firstname} ${patient.middlename} ${patient.lastname}`.toLowerCase()
+      const fullName =
+        `${patient.firstname} ${patient.middlename} ${patient.lastname}`.toLowerCase()
       return (
         fullName.includes(term) ||
         String(patient.email).toLowerCase().includes(term) ||
@@ -170,7 +171,7 @@ export const usePatientStore = defineStore('patientStore', () => {
     const currentId = newPatient.id ?? newPatient.Id
     const patientExist = patients.value.some(
       (p) =>
-        (p.id !== currentId) &&
+        p.id !== currentId &&
         p.firstname?.toLowerCase() === newPatient.firstname?.toLowerCase() &&
         p.lastname?.toLowerCase() === newPatient.lastname?.toLowerCase() &&
         p.middlename?.toLowerCase() === newPatient.middlename?.toLowerCase(),
@@ -213,7 +214,9 @@ export const usePatientStore = defineStore('patientStore', () => {
       }
 
       const responseText = await response.text()
-      const updatedData = responseText ? normalizePatient(JSON.parse(responseText)) : normalizePatient({ ...payload, Id: id })
+      const updatedData = responseText
+        ? normalizePatient(JSON.parse(responseText))
+        : normalizePatient({ ...payload, Id: id })
 
       const index = patients.value.findIndex((p) => p.id == id || p.Id == id)
       if (index !== -1) {
@@ -249,9 +252,7 @@ export const usePatientStore = defineStore('patientStore', () => {
   const emailVerification = (patient) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (isEditMode.value) return true
-    const emailExist = patients.value.some(
-      (p) => p.email && p.email === patient.email,
-    )
+    const emailExist = patients.value.some((p) => p.email && p.email === patient.email)
     if (patient.email && emailExist) {
       console.error(`Email ${patient.email} already in use`)
       return false

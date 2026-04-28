@@ -36,7 +36,9 @@
       </div>
 
       <!-- Record Detail Card -->
-      <div v-if="record" class="bg-white rounded-2xl shadow-sm border border-white p-8 mb-6"
+      <div
+        v-if="record"
+        class="bg-white rounded-2xl shadow-sm border border-white p-8 mb-6"
         :class="record.closed ? 'border-gray-200' : ''"
       >
         <div class="flex items-start justify-between mb-6">
@@ -151,19 +153,23 @@
           <div class="flex items-center gap-3">
             <div
               class="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm"
-              :class="record?.closed ? 'bg-gray-200' : 'bg-gradient-to-r from-emerald-500 to-teal-500'"
+              :class="
+                record?.closed ? 'bg-gray-200' : 'bg-gradient-to-r from-emerald-500 to-teal-500'
+              "
             >
               <i
                 class="text-sm"
-                :class="record?.closed ? 'fa-solid fa-lock text-gray-500' : 'fa-solid fa-rotate-right text-white'"
+                :class="
+                  record?.closed
+                    ? 'fa-solid fa-lock text-gray-500'
+                    : 'fa-solid fa-rotate-right text-white'
+                "
               ></i>
             </div>
             <div>
               <h3 class="text-xl font-bold text-gray-900">Follow-up Records</h3>
               <p class="text-xs text-gray-400">
-                {{ recordFollowups.length }} follow-up{{
-                  recordFollowups.length !== 1 ? 's' : ''
-                }}
+                {{ recordFollowups.length }} follow-up{{ recordFollowups.length !== 1 ? 's' : '' }}
                 for this record
               </p>
             </div>
@@ -189,11 +195,17 @@
         <div v-if="recordFollowups.length === 0" class="text-center py-12">
           <div
             class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
-            :class="record?.closed ? 'bg-gray-100' : 'bg-gradient-to-r from-emerald-500/10 to-teal-500/10'"
+            :class="
+              record?.closed ? 'bg-gray-100' : 'bg-gradient-to-r from-emerald-500/10 to-teal-500/10'
+            "
           >
             <i
               class="text-2xl"
-              :class="record?.closed ? 'fa-solid fa-lock text-gray-400' : 'fa-solid fa-rotate-right text-emerald-500'"
+              :class="
+                record?.closed
+                  ? 'fa-solid fa-lock text-gray-400'
+                  : 'fa-solid fa-rotate-right text-emerald-500'
+              "
             ></i>
           </div>
           <p class="text-gray-500 text-sm">No follow-ups recorded yet</p>
@@ -366,9 +378,7 @@ const recordId = computed(() => Number(route.params.recordId))
 
 const patient = computed(() => patientStore.patients.find((p) => p.id === patientId.value))
 
-const record = computed(() =>
-  recordStore.patientRecords.find((r) => r.id === recordId.value),
-)
+const record = computed(() => recordStore.patientRecords.find((r) => r.id === recordId.value))
 
 const recordFollowups = computed(() =>
   followupStore.followups.filter(
@@ -394,10 +404,16 @@ const formatDate = (dateString) => {
 const goBack = () => router.push({ name: 'patientrecords', params: { id: patientId.value } })
 
 const printRecord = () =>
-  router.push({ name: 'printview', params: { patientId: patientId.value, recordId: recordId.value } })
+  router.push({
+    name: 'printview',
+    params: { patientId: patientId.value, recordId: recordId.value },
+  })
 
 const openRecommendation = () =>
-  router.push({ name: 'recommendation', params: { patientId: patientId.value, recordId: recordId.value } })
+  router.push({
+    name: 'recommendation',
+    params: { patientId: patientId.value, recordId: recordId.value },
+  })
 
 const openAddFollowupModal = () => {
   if (record.value?.closed) return

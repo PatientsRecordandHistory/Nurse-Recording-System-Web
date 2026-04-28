@@ -161,9 +161,7 @@ export const usePatientRecord = defineStore('patientRecord', () => {
       })
       if (!response.ok) throw new Error('Failed to update record')
 
-      const index = patientRecords.value.findIndex(
-        (r) => Number(r.id ?? r.Id) === serverId,
-      )
+      const index = patientRecords.value.findIndex((r) => Number(r.id ?? r.Id) === serverId)
       if (index !== -1) {
         patientRecords.value[index] = normalizeRecord({
           ...patientRecords.value[index],
@@ -187,9 +185,7 @@ export const usePatientRecord = defineStore('patientRecord', () => {
     const serverId = Number(record.id ?? record.Id)
     const newClosed = !record.closed
 
-    const index = patientRecords.value.findIndex(
-      (r) => Number(r.id ?? r.Id) === serverId,
-    )
+    const index = patientRecords.value.findIndex((r) => Number(r.id ?? r.Id) === serverId)
     if (index === -1) return false
 
     // Apply immediately so the UI responds without waiting for the network
@@ -244,9 +240,7 @@ export const usePatientRecord = defineStore('patientRecord', () => {
         headers: getHeaders(),
       })
       if (!response.ok) throw new Error('Failed to delete record')
-      patientRecords.value = patientRecords.value.filter(
-        (r) => Number(r.id ?? r.Id) !== serverId,
-      )
+      patientRecords.value = patientRecords.value.filter((r) => Number(r.id ?? r.Id) !== serverId)
       return true
     } catch (error) {
       console.error('Error deleting record:', error)

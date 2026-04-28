@@ -130,8 +130,8 @@
         <p class="text-gray-600 mb-6">
           Are you sure you want to delete
           <span class="font-semibold">
-            {{ patientToDelete?.firstname }} {{ patientToDelete?.lastname }}
-          </span>?
+            {{ patientToDelete?.firstname }} {{ patientToDelete?.lastname }} </span
+          >?
         </p>
         <div class="flex justify-end gap-3">
           <button

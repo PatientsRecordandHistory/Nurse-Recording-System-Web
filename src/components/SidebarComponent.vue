@@ -28,7 +28,9 @@
           {{ userInitials }}
         </div>
         <div class="flex-1 min-w-0">
-          <h3 class="text-sm font-bold text-gray-800 truncate group-hover:text-[#2933FF] transition-colors">
+          <h3
+            class="text-sm font-bold text-gray-800 truncate group-hover:text-[#2933FF] transition-colors"
+          >
             {{ userName }}
           </h3>
           <p class="text-xs text-gray-500 truncate">{{ userEmail }}</p>
@@ -87,10 +89,7 @@
   </div>
 
   <!-- Edit Profile Modal -->
-  <EditProfileModal
-    v-if="showEditProfile"
-    @modalClose="closeEditProfile"
-  />
+  <EditProfileModal v-if="showEditProfile" @modalClose="closeEditProfile" />
 </template>
 
 <script setup>

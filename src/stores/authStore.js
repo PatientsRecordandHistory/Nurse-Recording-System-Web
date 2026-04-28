@@ -131,7 +131,10 @@ export const useAuthStore = defineStore('authStore', () => {
         const nurseData = data.user?.nurse || data.user || null
         nurse.value = nurseData
         localStorage.setItem('nurse', JSON.stringify(nurseData))
-        localStorage.setItem('nurseId', data.user?.nurseDetails?.nurseId || nurseData?.Id || nurseData?.id || '')
+        localStorage.setItem(
+          'nurseId',
+          data.user?.nurseDetails?.nurseId || nurseData?.Id || nurseData?.id || '',
+        )
 
         console.log('Login success')
         return true

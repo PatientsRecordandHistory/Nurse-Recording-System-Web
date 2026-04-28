@@ -62,7 +62,9 @@ export const useAlarmStore = defineStore('alarmStore', () => {
       // AudioContext blocked — start on first gesture
       const resume = () => {
         if (!alarmStopFns[deviceId]) {
-          try { alarmStopFns[deviceId] = startAlarmSound() } catch {}
+          try {
+            alarmStopFns[deviceId] = startAlarmSound()
+          } catch {}
         }
         document.removeEventListener('click', resume)
         document.removeEventListener('keydown', resume)
@@ -164,14 +166,16 @@ export const useAlarmStore = defineStore('alarmStore', () => {
     }
   }
 
-  const setComing   = (deviceId) => updateAlarmState(deviceId, 2)
+  const setComing = (deviceId) => updateAlarmState(deviceId, 2)
   const dismissCall = (deviceId) => updateAlarmState(deviceId, 0)
-  const endCall     = (deviceId) => updateAlarmState(deviceId, 3)
+  const endCall = (deviceId) => updateAlarmState(deviceId, 3)
 
   watch(
     () => authStore.isAuthenticated,
-    (isAuth) => { if (!isAuth) stopListening() },
-    { immediate: true }
+    (isAuth) => {
+      if (!isAuth) stopListening()
+    },
+    { immediate: true },
   )
 
   return {

@@ -78,19 +78,30 @@
               <div class="space-y-4">
                 <div>
                   <p class="font-semibold text-gray-700 mb-1">Recent Diagnosis:</p>
-                  <p class="text-gray-800">{{ printStore.records[0]?.diagnosis || 'Not Specified' }}</p>
+                  <p class="text-gray-800">
+                    {{ printStore.records[0]?.diagnosis || 'Not Specified' }}
+                  </p>
                 </div>
                 <div>
                   <p class="font-semibold text-gray-700 mb-1">Symptoms:</p>
-                  <p class="text-gray-800">{{ printStore.records[0]?.symptom || 'Not Specified' }}</p>
+                  <p class="text-gray-800">
+                    {{ printStore.records[0]?.symptom || 'Not Specified' }}
+                  </p>
                 </div>
                 <div>
                   <p class="font-semibold text-gray-700 mb-1">Current Treatment:</p>
-                  <p class="text-gray-800">{{ printStore.records[0]?.treatment || 'Not Specified' }}</p>
+                  <p class="text-gray-800">
+                    {{ printStore.records[0]?.treatment || 'Not Specified' }}
+                  </p>
                 </div>
                 <!-- Latest follow-up summary -->
-                <div v-if="printStore.latestFollowup" class="pt-3 border-t border-gray-200 col-span-2">
-                  <p class="text-xs font-bold uppercase tracking-wider text-emerald-600 mb-2 flex items-center gap-1">
+                <div
+                  v-if="printStore.latestFollowup"
+                  class="pt-3 border-t border-gray-200 col-span-2"
+                >
+                  <p
+                    class="text-xs font-bold uppercase tracking-wider text-emerald-600 mb-2 flex items-center gap-1"
+                  >
                     <i class="fa-solid fa-rotate-right"></i> Latest Follow-up
                     <span class="text-gray-400 font-normal normal-case ml-1">
                       {{ formatDate(printStore.latestFollowup.date) }}
@@ -107,7 +118,9 @@
                     </div>
                     <div v-if="printStore.latestFollowup.additional_treatment" class="col-span-2">
                       <p class="font-semibold text-emerald-700 mb-0.5">Additional Treatment:</p>
-                      <p class="text-gray-700">{{ printStore.latestFollowup.additional_treatment }}</p>
+                      <p class="text-gray-700">
+                        {{ printStore.latestFollowup.additional_treatment }}
+                      </p>
                     </div>
                     <div v-if="printStore.latestFollowup.notes" class="col-span-2">
                       <p class="font-semibold text-gray-500 mb-0.5">Notes:</p>
@@ -142,7 +155,9 @@
 
               <div class="grid grid-cols-2 gap-4">
                 <div class="bg-gray-50 p-5 rounded-lg">
-                  <label class="block font-semibold text-gray-700 mb-2">Recommended Facility:</label>
+                  <label class="block font-semibold text-gray-700 mb-2"
+                    >Recommended Facility:</label
+                  >
                   <input
                     type="text"
                     v-model="form.recommendedFacility"
@@ -175,7 +190,9 @@
               </div>
 
               <div class="bg-gray-50 p-5 rounded-lg">
-                <label class="block font-semibold text-gray-700 mb-2">Required Medical Specialty:</label>
+                <label class="block font-semibold text-gray-700 mb-2"
+                  >Required Medical Specialty:</label
+                >
                 <input
                   type="text"
                   v-model="form.requiredSpecialty"
@@ -184,7 +201,9 @@
               </div>
 
               <div class="bg-gray-50 p-5 rounded-lg">
-                <label class="block font-semibold text-gray-700 mb-2">Recommended Transport Mode:</label>
+                <label class="block font-semibold text-gray-700 mb-2"
+                  >Recommended Transport Mode:</label
+                >
                 <input
                   type="text"
                   v-model="form.transportMode"
@@ -209,23 +228,38 @@
               <ul class="space-y-3 text-sm text-gray-700">
                 <li class="flex items-start gap-2">
                   <i class="fa-solid fa-circle-check text-blue-600 mt-0.5 flex-shrink-0"></i>
-                  <span><strong>Medical Records:</strong> Ensure all patient medical records, test results, and imaging studies are included with the transfer documentation.</span>
+                  <span
+                    ><strong>Medical Records:</strong> Ensure all patient medical records, test
+                    results, and imaging studies are included with the transfer documentation.</span
+                  >
                 </li>
                 <li class="flex items-start gap-2">
                   <i class="fa-solid fa-circle-check text-blue-600 mt-0.5 flex-shrink-0"></i>
-                  <span><strong>Medication List:</strong> Provide complete list of current medications, dosages, and administration schedule.</span>
+                  <span
+                    ><strong>Medication List:</strong> Provide complete list of current medications,
+                    dosages, and administration schedule.</span
+                  >
                 </li>
                 <li class="flex items-start gap-2">
                   <i class="fa-solid fa-circle-check text-blue-600 mt-0.5 flex-shrink-0"></i>
-                  <span><strong>Family Notification:</strong> Ensure patient's family or emergency contact has been informed of the transfer and the receiving facility.</span>
+                  <span
+                    ><strong>Family Notification:</strong> Ensure patient's family or emergency
+                    contact has been informed of the transfer and the receiving facility.</span
+                  >
                 </li>
                 <li class="flex items-start gap-2">
                   <i class="fa-solid fa-circle-check text-blue-600 mt-0.5 flex-shrink-0"></i>
-                  <span><strong>Receiving Facility Coordination:</strong> Confirm bed availability and acceptance by the receiving facility before initiating transfer.</span>
+                  <span
+                    ><strong>Receiving Facility Coordination:</strong> Confirm bed availability and
+                    acceptance by the receiving facility before initiating transfer.</span
+                  >
                 </li>
                 <li class="flex items-start gap-2">
                   <i class="fa-solid fa-circle-check text-blue-600 mt-0.5 flex-shrink-0"></i>
-                  <span><strong>Patient Stability:</strong> Ensure patient is medically stable for transport. Monitor vital signs during transfer.</span>
+                  <span
+                    ><strong>Patient Stability:</strong> Ensure patient is medically stable for
+                    transport. Monitor vital signs during transfer.</span
+                  >
                 </li>
               </ul>
             </div>
@@ -234,12 +268,13 @@
           <!-- Professional Statement -->
           <div class="statement mb-8 p-5 bg-blue-50 border-l-4 border-blue-600 rounded">
             <p class="text-sm text-gray-700 leading-relaxed">
-              This transfer recommendation is issued based on the patient's current medical condition
-              and the limitations of our facility's capabilities. The recommended transfer is in the
-              best interest of the patient to ensure they receive appropriate and specialized medical
-              care. This document serves as an official medical recommendation and should be presented
-              to the receiving facility. All patient information is confidential and must be handled
-              in accordance with applicable healthcare privacy regulations.
+              This transfer recommendation is issued based on the patient's current medical
+              condition and the limitations of our facility's capabilities. The recommended transfer
+              is in the best interest of the patient to ensure they receive appropriate and
+              specialized medical care. This document serves as an official medical recommendation
+              and should be presented to the receiving facility. All patient information is
+              confidential and must be handled in accordance with applicable healthcare privacy
+              regulations.
             </p>
           </div>
 
@@ -263,7 +298,9 @@
           <!-- Footer -->
           <div class="footer text-center mt-12 pt-8 border-t border-gray-200 text-xs text-gray-500">
             <p class="mb-1">© 2024 ACLC Clinic. All rights reserved.</p>
-            <p>This document is confidential and intended solely for authorized medical personnel.</p>
+            <p>
+              This document is confidential and intended solely for authorized medical personnel.
+            </p>
           </div>
         </div>
       </div>
@@ -320,13 +357,21 @@ const PrintContent = defineComponent({
 
         // Document Type Banner
         h('div', { class: 'mb-8 text-center' }, [
-          h('h2', { class: 'text-2xl font-bold text-gray-800 mb-2' }, 'PATIENT TRANSFER RECOMMENDATION'),
+          h(
+            'h2',
+            { class: 'text-2xl font-bold text-gray-800 mb-2' },
+            'PATIENT TRANSFER RECOMMENDATION',
+          ),
           h('p', { class: 'text-gray-600' }, `Date Issued: ${printStore.todaysDate}`),
         ]),
 
         // Patient Information
         h('div', { class: 'patient-section mb-8 bg-gray-50 p-6 rounded-lg' }, [
-          h('h3', { class: 'text-xl font-bold text-gray-800 mb-4 pb-2 border-b border-gray-300' }, 'PATIENT INFORMATION'),
+          h(
+            'h3',
+            { class: 'text-xl font-bold text-gray-800 mb-4 pb-2 border-b border-gray-300' },
+            'PATIENT INFORMATION',
+          ),
           h('div', { class: 'grid grid-cols-2 gap-4 text-sm' }, [
             h('div', [
               h('p', { class: 'text-gray-600 font-semibold mb-1' }, 'Full Name:'),
@@ -353,52 +398,103 @@ const PrintContent = defineComponent({
 
         // Medical Summary
         h('div', { class: 'medical-summary mb-8' }, [
-          h('h3', { class: 'text-xl font-bold text-gray-800 mb-4 pb-2 border-b border-gray-300' }, 'MEDICAL SUMMARY'),
+          h(
+            'h3',
+            { class: 'text-xl font-bold text-gray-800 mb-4 pb-2 border-b border-gray-300' },
+            'MEDICAL SUMMARY',
+          ),
           printStore.records.length > 0
             ? h('div', { class: 'bg-gray-50 p-6 rounded-lg' }, [
                 h('div', { class: 'space-y-4' }, [
                   h('div', [
                     h('p', { class: 'font-semibold text-gray-700 mb-1' }, 'Recent Diagnosis:'),
-                    h('p', { class: 'text-gray-800' }, printStore.records[0]?.diagnosis || 'Not Specified'),
+                    h(
+                      'p',
+                      { class: 'text-gray-800' },
+                      printStore.records[0]?.diagnosis || 'Not Specified',
+                    ),
                   ]),
                   h('div', [
                     h('p', { class: 'font-semibold text-gray-700 mb-1' }, 'Symptoms:'),
-                    h('p', { class: 'text-gray-800' }, printStore.records[0]?.symptom || 'Not Specified'),
+                    h(
+                      'p',
+                      { class: 'text-gray-800' },
+                      printStore.records[0]?.symptom || 'Not Specified',
+                    ),
                   ]),
                   h('div', [
                     h('p', { class: 'font-semibold text-gray-700 mb-1' }, 'Current Treatment:'),
-                    h('p', { class: 'text-gray-800' }, printStore.records[0]?.treatment || 'Not Specified'),
+                    h(
+                      'p',
+                      { class: 'text-gray-800' },
+                      printStore.records[0]?.treatment || 'Not Specified',
+                    ),
                   ]),
                   // Latest follow-up summary
                   printStore.latestFollowup
                     ? h('div', { class: 'pt-4 border-t border-gray-200' }, [
-                        h('p', { class: 'text-xs font-bold uppercase tracking-wider text-emerald-600 mb-3 flex items-center gap-1' }, [
-                          h('i', { class: 'fa-solid fa-rotate-right' }),
-                          ` Latest Follow-up — ${formatDate(printStore.latestFollowup.date)}`,
-                        ]),
+                        h(
+                          'p',
+                          {
+                            class:
+                              'text-xs font-bold uppercase tracking-wider text-emerald-600 mb-3 flex items-center gap-1',
+                          },
+                          [
+                            h('i', { class: 'fa-solid fa-rotate-right' }),
+                            ` Latest Follow-up — ${formatDate(printStore.latestFollowup.date)}`,
+                          ],
+                        ),
                         h('div', { class: 'grid grid-cols-2 gap-3 text-sm' }, [
                           printStore.latestFollowup.new_symptom
                             ? h('div', [
-                                h('p', { class: 'font-semibold text-orange-600 mb-0.5' }, 'Updated Symptom:'),
-                                h('p', { class: 'text-gray-800' }, printStore.latestFollowup.new_symptom),
+                                h(
+                                  'p',
+                                  { class: 'font-semibold text-orange-600 mb-0.5' },
+                                  'Updated Symptom:',
+                                ),
+                                h(
+                                  'p',
+                                  { class: 'text-gray-800' },
+                                  printStore.latestFollowup.new_symptom,
+                                ),
                               ])
                             : null,
                           printStore.latestFollowup.new_diagnostic
                             ? h('div', [
-                                h('p', { class: 'font-semibold text-orange-600 mb-0.5' }, 'Updated Diagnosis:'),
-                                h('p', { class: 'text-gray-800' }, printStore.latestFollowup.new_diagnostic),
+                                h(
+                                  'p',
+                                  { class: 'font-semibold text-orange-600 mb-0.5' },
+                                  'Updated Diagnosis:',
+                                ),
+                                h(
+                                  'p',
+                                  { class: 'text-gray-800' },
+                                  printStore.latestFollowup.new_diagnostic,
+                                ),
                               ])
                             : null,
                           printStore.latestFollowup.additional_treatment
                             ? h('div', { class: 'col-span-2' }, [
-                                h('p', { class: 'font-semibold text-emerald-700 mb-0.5' }, 'Additional Treatment:'),
-                                h('p', { class: 'text-gray-800' }, printStore.latestFollowup.additional_treatment),
+                                h(
+                                  'p',
+                                  { class: 'font-semibold text-emerald-700 mb-0.5' },
+                                  'Additional Treatment:',
+                                ),
+                                h(
+                                  'p',
+                                  { class: 'text-gray-800' },
+                                  printStore.latestFollowup.additional_treatment,
+                                ),
                               ])
                             : null,
                           printStore.latestFollowup.notes
                             ? h('div', { class: 'col-span-2' }, [
                                 h('p', { class: 'font-semibold text-gray-500 mb-0.5' }, 'Notes:'),
-                                h('p', { class: 'text-gray-600 italic' }, printStore.latestFollowup.notes),
+                                h(
+                                  'p',
+                                  { class: 'text-gray-600 italic' },
+                                  printStore.latestFollowup.notes,
+                                ),
                               ])
                             : null,
                         ]),
@@ -416,7 +512,11 @@ const PrintContent = defineComponent({
 
         // Transfer Recommendation Details
         h('div', { class: 'transfer-details mb-8' }, [
-          h('h3', { class: 'text-xl font-bold text-gray-800 mb-4 pb-2 border-b border-gray-300' }, 'TRANSFER RECOMMENDATION'),
+          h(
+            'h3',
+            { class: 'text-xl font-bold text-gray-800 mb-4 pb-2 border-b border-gray-300' },
+            'TRANSFER RECOMMENDATION',
+          ),
           h('div', { class: 'space-y-4' }, [
             h('div', { class: 'bg-gray-50 p-5 rounded-lg' }, [
               h('p', { class: 'font-semibold text-gray-700 mb-2' }, 'Reason for Transfer:'),
@@ -430,15 +530,19 @@ const PrintContent = defineComponent({
               ]),
               h('div', { class: 'bg-gray-50 p-5 rounded-lg' }, [
                 h('p', { class: 'font-semibold text-gray-700 mb-2' }, 'Urgency Level:'),
-                h('span', {
-                  class: `inline-block px-3 py-1 rounded-full text-sm font-medium ${
-                    form.value.urgencyLevel === 'EMERGENCY'
-                      ? 'bg-red-100 text-red-800'
-                      : form.value.urgencyLevel === 'URGENT'
-                        ? 'bg-orange-100 text-orange-800'
-                        : 'bg-yellow-100 text-yellow-800'
-                  }`,
-                }, form.value.urgencyLevel),
+                h(
+                  'span',
+                  {
+                    class: `inline-block px-3 py-1 rounded-full text-sm font-medium ${
+                      form.value.urgencyLevel === 'EMERGENCY'
+                        ? 'bg-red-100 text-red-800'
+                        : form.value.urgencyLevel === 'URGENT'
+                          ? 'bg-orange-100 text-orange-800'
+                          : 'bg-yellow-100 text-yellow-800'
+                    }`,
+                  },
+                  form.value.urgencyLevel,
+                ),
                 h('p', { class: 'text-gray-500 text-xs mt-2' }, `(${form.value.urgencyTimeframe})`),
               ]),
             ]),
@@ -459,28 +563,47 @@ const PrintContent = defineComponent({
 
         // Transfer Instructions
         h('div', { class: 'instructions mb-8' }, [
-          h('h3', { class: 'text-xl font-bold text-gray-800 mb-4 pb-2 border-b border-gray-300' }, 'TRANSFER INSTRUCTIONS'),
+          h(
+            'h3',
+            { class: 'text-xl font-bold text-gray-800 mb-4 pb-2 border-b border-gray-300' },
+            'TRANSFER INSTRUCTIONS',
+          ),
           h('div', { class: 'bg-blue-50 border-l-4 border-blue-600 p-5 rounded' }, [
             h('ul', { class: 'space-y-3 text-sm text-gray-700' }, [
               h('li', { class: 'flex items-start gap-2' }, [
                 h('i', { class: 'fa-solid fa-circle-check text-blue-600 mt-0.5 flex-shrink-0' }),
-                h('span', [h('strong', 'Medical Records: '), 'Ensure all patient medical records, test results, and imaging studies are included with the transfer documentation.']),
+                h('span', [
+                  h('strong', 'Medical Records: '),
+                  'Ensure all patient medical records, test results, and imaging studies are included with the transfer documentation.',
+                ]),
               ]),
               h('li', { class: 'flex items-start gap-2' }, [
                 h('i', { class: 'fa-solid fa-circle-check text-blue-600 mt-0.5 flex-shrink-0' }),
-                h('span', [h('strong', 'Medication List: '), 'Provide complete list of current medications, dosages, and administration schedule.']),
+                h('span', [
+                  h('strong', 'Medication List: '),
+                  'Provide complete list of current medications, dosages, and administration schedule.',
+                ]),
               ]),
               h('li', { class: 'flex items-start gap-2' }, [
                 h('i', { class: 'fa-solid fa-circle-check text-blue-600 mt-0.5 flex-shrink-0' }),
-                h('span', [h('strong', 'Family Notification: '), "Ensure patient's family or emergency contact has been informed of the transfer and the receiving facility."]),
+                h('span', [
+                  h('strong', 'Family Notification: '),
+                  "Ensure patient's family or emergency contact has been informed of the transfer and the receiving facility.",
+                ]),
               ]),
               h('li', { class: 'flex items-start gap-2' }, [
                 h('i', { class: 'fa-solid fa-circle-check text-blue-600 mt-0.5 flex-shrink-0' }),
-                h('span', [h('strong', 'Receiving Facility Coordination: '), 'Confirm bed availability and acceptance by the receiving facility before initiating transfer.']),
+                h('span', [
+                  h('strong', 'Receiving Facility Coordination: '),
+                  'Confirm bed availability and acceptance by the receiving facility before initiating transfer.',
+                ]),
               ]),
               h('li', { class: 'flex items-start gap-2' }, [
                 h('i', { class: 'fa-solid fa-circle-check text-blue-600 mt-0.5 flex-shrink-0' }),
-                h('span', [h('strong', 'Patient Stability: '), 'Ensure patient is medically stable for transport. Monitor vital signs during transfer.']),
+                h('span', [
+                  h('strong', 'Patient Stability: '),
+                  'Ensure patient is medically stable for transport. Monitor vital signs during transfer.',
+                ]),
               ]),
             ]),
           ]),
@@ -514,10 +637,17 @@ const PrintContent = defineComponent({
         ]),
 
         // Footer
-        h('div', { class: 'footer text-center mt-12 pt-8 border-t border-gray-200 text-xs text-gray-500' }, [
-          h('p', { class: 'mb-1' }, '© 2024 ACLC Clinic. All rights reserved.'),
-          h('p', 'This document is confidential and intended solely for authorized medical personnel.'),
-        ]),
+        h(
+          'div',
+          { class: 'footer text-center mt-12 pt-8 border-t border-gray-200 text-xs text-gray-500' },
+          [
+            h('p', { class: 'mb-1' }, '© 2024 ACLC Clinic. All rights reserved.'),
+            h(
+              'p',
+              'This document is confidential and intended solely for authorized medical personnel.',
+            ),
+          ],
+        ),
       ])
   },
 })

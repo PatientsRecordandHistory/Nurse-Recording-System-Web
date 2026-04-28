@@ -47,7 +47,9 @@
 
         <!-- ── Previous context (read-only) ─────────────────────────────── -->
         <div class="bg-gray-50 rounded-xl border border-gray-200 p-5 space-y-4">
-          <p class="text-xs font-bold uppercase tracking-wider text-gray-400 flex items-center gap-2">
+          <p
+            class="text-xs font-bold uppercase tracking-wider text-gray-400 flex items-center gap-2"
+          >
             <i class="fa-solid fa-clock-rotate-left text-gray-400"></i>
             Previous record context (read-only)
           </p>
@@ -55,19 +57,25 @@
           <div class="grid grid-cols-2 gap-4">
             <div>
               <p class="text-xs font-semibold text-gray-500 mb-1">Previous Symptom</p>
-              <div class="bg-white rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-700 min-h-[56px]">
+              <div
+                class="bg-white rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-700 min-h-[56px]"
+              >
                 {{ previousContext.symptom || '—' }}
               </div>
             </div>
             <div>
               <p class="text-xs font-semibold text-gray-500 mb-1">Previous Diagnosis</p>
-              <div class="bg-white rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-700 min-h-[56px]">
+              <div
+                class="bg-white rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-700 min-h-[56px]"
+              >
                 {{ previousContext.diagnosis || '—' }}
               </div>
             </div>
             <div class="col-span-2">
               <p class="text-xs font-semibold text-gray-500 mb-1">Previous Treatment</p>
-              <div class="bg-white rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-700 min-h-[40px]">
+              <div
+                class="bg-white rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-700 min-h-[40px]"
+              >
                 {{ previousContext.treatment || '—' }}
               </div>
             </div>

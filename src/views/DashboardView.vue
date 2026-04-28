@@ -146,9 +146,7 @@
                 <span
                   class="text-xs font-bold px-2 py-0.5 rounded-full ml-2 flex-shrink-0"
                   :class="
-                    isUpcoming(appt)
-                      ? 'bg-green-100 text-green-700'
-                      : 'bg-gray-100 text-gray-500'
+                    isUpcoming(appt) ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
                   "
                 >
                   {{ isUpcoming(appt) ? 'Upcoming' : 'Past' }}

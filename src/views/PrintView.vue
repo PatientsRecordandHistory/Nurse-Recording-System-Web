@@ -167,46 +167,72 @@ const PrintContent = defineComponent({
             'FOLLOW-UP RECORDS',
           ),
           printStore.recordFollowups.length > 0
-            ? h('div', { class: 'space-y-4' },
+            ? h(
+                'div',
+                { class: 'space-y-4' },
                 printStore.recordFollowups.map((fu, index) =>
-                  h('div', {
-                    class: 'p-5 border border-emerald-200 rounded-lg bg-emerald-50/40',
-                    key: fu.id,
-                  }, [
-                    h('div', { class: 'flex justify-between items-center mb-3' }, [
-                      h('span', { class: 'text-sm font-bold text-emerald-700' }, `Follow-up #${index + 1}`),
-                      h('span', { class: 'text-xs text-gray-500' }, formatDate(fu.date)),
-                    ]),
-                    h('div', { class: 'grid grid-cols-2 gap-3 text-sm' }, [
-                      fu.new_symptom
-                        ? h('div', [
-                            h('p', { class: 'font-semibold text-orange-600 mb-1' }, 'Updated Symptom:'),
-                            h('p', { class: 'text-gray-800' }, fu.new_symptom),
-                          ])
-                        : null,
-                      fu.new_diagnostic
-                        ? h('div', [
-                            h('p', { class: 'font-semibold text-orange-600 mb-1' }, 'Updated Diagnosis:'),
-                            h('p', { class: 'text-gray-800' }, fu.new_diagnostic),
-                          ])
-                        : null,
-                      fu.additional_treatment
-                        ? h('div', { class: 'col-span-2' }, [
-                            h('p', { class: 'font-semibold text-emerald-700 mb-1' }, 'Additional Treatment:'),
-                            h('p', { class: 'text-gray-800' }, fu.additional_treatment),
-                          ])
-                        : null,
-                      fu.notes
-                        ? h('div', { class: 'col-span-2' }, [
-                            h('p', { class: 'font-semibold text-gray-600 mb-1' }, 'Notes:'),
-                            h('p', { class: 'text-gray-700 italic' }, fu.notes),
-                          ])
-                        : null,
-                    ]),
-                  ])
-                )
+                  h(
+                    'div',
+                    {
+                      class: 'p-5 border border-emerald-200 rounded-lg bg-emerald-50/40',
+                      key: fu.id,
+                    },
+                    [
+                      h('div', { class: 'flex justify-between items-center mb-3' }, [
+                        h(
+                          'span',
+                          { class: 'text-sm font-bold text-emerald-700' },
+                          `Follow-up #${index + 1}`,
+                        ),
+                        h('span', { class: 'text-xs text-gray-500' }, formatDate(fu.date)),
+                      ]),
+                      h('div', { class: 'grid grid-cols-2 gap-3 text-sm' }, [
+                        fu.new_symptom
+                          ? h('div', [
+                              h(
+                                'p',
+                                { class: 'font-semibold text-orange-600 mb-1' },
+                                'Updated Symptom:',
+                              ),
+                              h('p', { class: 'text-gray-800' }, fu.new_symptom),
+                            ])
+                          : null,
+                        fu.new_diagnostic
+                          ? h('div', [
+                              h(
+                                'p',
+                                { class: 'font-semibold text-orange-600 mb-1' },
+                                'Updated Diagnosis:',
+                              ),
+                              h('p', { class: 'text-gray-800' }, fu.new_diagnostic),
+                            ])
+                          : null,
+                        fu.additional_treatment
+                          ? h('div', { class: 'col-span-2' }, [
+                              h(
+                                'p',
+                                { class: 'font-semibold text-emerald-700 mb-1' },
+                                'Additional Treatment:',
+                              ),
+                              h('p', { class: 'text-gray-800' }, fu.additional_treatment),
+                            ])
+                          : null,
+                        fu.notes
+                          ? h('div', { class: 'col-span-2' }, [
+                              h('p', { class: 'font-semibold text-gray-600 mb-1' }, 'Notes:'),
+                              h('p', { class: 'text-gray-700 italic' }, fu.notes),
+                            ])
+                          : null,
+                      ]),
+                    ],
+                  ),
+                ),
               )
-            : h('p', { class: 'text-center text-gray-400 italic py-6' }, 'No follow-up records for this visit.'),
+            : h(
+                'p',
+                { class: 'text-center text-gray-400 italic py-6' },
+                'No follow-up records for this visit.',
+              ),
         ]),
 
         // Professional Statement
@@ -223,11 +249,7 @@ const PrintContent = defineComponent({
           h('div', { class: 'grid grid-cols-2 gap-8' }, [
             h('div', [
               h('p', { class: 'text-sm font-semibold text-gray-700 mb-2' }, 'Prepared By:'),
-              h(
-                'p',
-                { class: 'text-gray-800 font-medium mb-1' },
-                printStore.nurseDisplayName,
-              ),
+              h('p', { class: 'text-gray-800 font-medium mb-1' }, printStore.nurseDisplayName),
               h('p', { class: 'text-xs text-gray-600' }, printStore.nurseEmail),
               h('div', { class: 'mt-4 pt-2 border-t border-gray-400 w-48' }),
               h('p', { class: 'text-xs text-gray-600 mt-1' }, 'Nurse Signature'),

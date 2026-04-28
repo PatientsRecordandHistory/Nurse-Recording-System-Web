@@ -3,7 +3,7 @@ import { onMounted, onUnmounted } from 'vue'
 import { useAlarmStore } from '@/stores/alarmStore.js'
 import NurseCallModal from '@/modals/NurseCallModal.vue'
 
-const alarmStore = useAlarmStore()   // ← this was missing
+const alarmStore = useAlarmStore() // ← this was missing
 
 onMounted(() => alarmStore.startListening())
 onUnmounted(() => alarmStore.stopListening())

@@ -18,7 +18,10 @@
 
         <!-- Badge -->
         <div class="text-center mb-3">
-          <span class="inline-block text-xs font-semibold px-3 py-1 rounded-full" :class="badgeClass">
+          <span
+            class="inline-block text-xs font-semibold px-3 py-1 rounded-full"
+            :class="badgeClass"
+          >
             {{ badgeText }}
           </span>
         </div>
@@ -85,7 +88,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'                     // ← removed onMounted, onUnmounted
+import { ref, computed } from 'vue' // ← removed onMounted, onUnmounted
 import { useAlarmStore } from '@/stores/alarmStore.js'
 
 const props = defineProps({
@@ -118,13 +121,24 @@ const badgeClass = computed(() => ({
   'bg-blue-100 text-blue-700': callState.value === 'ended',
 }))
 
-const badgeText  = computed(() => ({ calling: 'Incoming call', coming: 'On my way',      ended: 'Call ended'    })[callState.value] ?? '')
-const titleText  = computed(() => ({ calling: 'Patient is calling!', coming: 'Marked as coming', ended: 'Buzzer stopped' })[callState.value] ?? '')
-const messageText = computed(() => ({
-  calling: "Someone pressed the call button. Tap \"I'm coming\" to notify the patient.",
-  coming:  'Patient notified. Buzzer stays active until you end the call below.',
-  ended:   'Call has been ended. The Arduino buzzer will stop.',
-})[callState.value] ?? '')
+const badgeText = computed(
+  () =>
+    ({ calling: 'Incoming call', coming: 'On my way', ended: 'Call ended' })[callState.value] ?? '',
+)
+const titleText = computed(
+  () =>
+    ({ calling: 'Patient is calling!', coming: 'Marked as coming', ended: 'Buzzer stopped' })[
+      callState.value
+    ] ?? '',
+)
+const messageText = computed(
+  () =>
+    ({
+      calling: 'Someone pressed the call button. Tap "I\'m coming" to notify the patient.',
+      coming: 'Patient notified. Buzzer stays active until you end the call below.',
+      ended: 'Call has been ended. The Arduino buzzer will stop.',
+    })[callState.value] ?? '',
+)
 
 async function tryEndCall() {
   if (endInput.value.trim().toUpperCase() !== 'END CALL') return

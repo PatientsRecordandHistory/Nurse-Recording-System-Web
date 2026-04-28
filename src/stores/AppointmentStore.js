@@ -44,7 +44,14 @@ export const useAppointmentStore = defineStore('appointmentStore', () => {
   }
 
   const resetForm = () => {
-    appointmentsForm.value = { id: null, appointmentId: null, patientId: null, date: '', time: '', reason: '' }
+    appointmentsForm.value = {
+      id: null,
+      appointmentId: null,
+      patientId: null,
+      date: '',
+      time: '',
+      reason: '',
+    }
     selectedPatientId.value = null
     patientSearchTerm.value = ''
   }
@@ -56,7 +63,8 @@ export const useAppointmentStore = defineStore('appointmentStore', () => {
     if (!patientSearchTerm.value?.trim()) return []
     const term = patientSearchTerm.value.toLowerCase().trim()
     return patientStore.patients.filter((patient) => {
-      const fullName = `${patient.firstname ?? ''} ${patient.middlename ?? ''} ${patient.lastname ?? ''}`.toLowerCase()
+      const fullName =
+        `${patient.firstname ?? ''} ${patient.middlename ?? ''} ${patient.lastname ?? ''}`.toLowerCase()
       const contact = String(patient.emergencyContact ?? patient.EmergencyContact ?? '')
       const email = String(patient.email ?? patient.Email ?? '').toLowerCase()
       return fullName.includes(term) || contact.includes(term) || email.includes(term)
@@ -95,9 +103,7 @@ export const useAppointmentStore = defineStore('appointmentStore', () => {
    */
   function resolvePatientName(patientId) {
     if (!patientId) return 'Unknown Patient'
-    const p = patientStore.patients.find(
-      (pt) => String(pt.id ?? pt.Id) === String(patientId),
-    )
+    const p = patientStore.patients.find((pt) => String(pt.id ?? pt.Id) === String(patientId))
     if (!p) return 'Unknown Patient'
     const first = p.firstname ?? p.Firstname ?? ''
     const last = p.lastname ?? p.Lastname ?? ''
@@ -201,7 +207,8 @@ export const useAppointmentStore = defineStore('appointmentStore', () => {
       })
       if (!response.ok) throw new Error('Failed to update appointment')
 
-      const updatedData = response.status === 204 ? { ...updatedAppointment } : await response.json()
+      const updatedData =
+        response.status === 204 ? { ...updatedAppointment } : await response.json()
       const index = appointments.value.findIndex((a) => Number(a.id ?? a.Id) === Number(id))
       if (index !== -1) {
         appointments.value[index] = normalizeAppointment(updatedData)
@@ -240,9 +247,7 @@ export const useAppointmentStore = defineStore('appointmentStore', () => {
         headers: getHeaders(),
       })
       if (!response.ok) throw new Error('Failed to delete appointment')
-      appointments.value = appointments.value.filter(
-        (a) => Number(a.id ?? a.Id) !== Number(id),
-      )
+      appointments.value = appointments.value.filter((a) => Number(a.id ?? a.Id) !== Number(id))
       return true
     } catch (error) {
       console.error('Error deleting appointment:', error)
@@ -262,7 +267,7 @@ export const useAppointmentStore = defineStore('appointmentStore', () => {
     fetchAppointments,
     submitAppointment,
     setFormforEdit,
-      deleteAppointment,
+    deleteAppointment,
     resetForm,
     editAppointment,
     resolvePatientName,
