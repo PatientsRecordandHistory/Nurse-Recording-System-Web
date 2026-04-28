@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
+import { apiFetch } from '@/api.js'
 
 /**
  * Decode a JWT and return its payload, or null if malformed.
@@ -101,7 +102,7 @@ export const useAuthStore = defineStore('authStore', () => {
     }
 
     const fullUrl = `${import.meta.env.VITE_API_BASE_URL}${url}`
-    const response = await apiFetchetch(fullUrl, { ...options, headers })
+    const response = await apiFetch(fullUrl, { ...options, headers })
 
     if (response.status === 401) {
       clearSession()
