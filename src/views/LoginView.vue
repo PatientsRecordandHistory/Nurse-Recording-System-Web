@@ -45,24 +45,33 @@
           </div>
 
           <!-- Password Field -->
-          <div class="form-group">
-            <label for="password" class="block text-sm font-semibold text-gray-700 mb-2 text-left">
-              Password:
-            </label>
-            <div class="relative">
-              <div class="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                <i class="fa-solid fa-lock text-gray-400"></i>
-              </div>
-              <input
-                type="password"
-                id="password"
-                v-model="auth.formLogin.password"
-                placeholder="Enter your password"
-                class="w-full pl-12 pr-4 py-3.5 rounded-xl focus:outline-none bg-white text-gray-800 placeholder-gray-400 transition-all duration-300 border-2 border-gray-200 hover:border-gray-300 gradient-border-focus"
-                required
-              />
-            </div>
-          </div>
+<div class="form-group">
+  <label for="password" class="block text-sm font-semibold text-gray-700 mb-2 text-left">
+    Password:
+  </label>
+  <div class="relative">
+    <div class="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
+      <i class="fa-solid fa-lock text-gray-400"></i>
+    </div>
+    
+    <input
+      :type="showPassword ? 'text' : 'password'"
+      id="password"
+      v-model="auth.formLogin.password"
+      placeholder="Enter your password"
+      class="w-full pl-12 pr-12 py-3.5 rounded-xl focus:outline-none bg-white text-gray-800 placeholder-gray-400 transition-all duration-300 border-2 border-gray-200 hover:border-gray-300 gradient-border-focus"
+      required
+    />
+
+    <button
+      type="button"
+      @click="showPassword = !showPassword"
+      class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+    >
+      <i :class="showPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"></i>
+    </button>
+  </div>
+</div>
 
           <!-- Login Button -->
           <button
@@ -96,8 +105,11 @@
 <script setup>
 import router from '@/router'
 import { useAuthStore } from '@/stores/authStore'
+import { ref } from 'vue'
+
 
 const auth = useAuthStore()
+const showPassword = ref(false)
 
 const submitHandler = async () => {
   const success = await auth.login()
