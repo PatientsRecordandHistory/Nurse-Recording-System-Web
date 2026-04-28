@@ -1,12 +1,23 @@
 import { ref, computed, watch } from 'vue'
 import { defineStore } from 'pinia'
 import { useAuthStore } from './authStore.js'
+import { usePatientRecord } from './patientRecord.js'
 import { apiFetch } from '@/api.js'
 
 export const usePatientStore = defineStore('patientStore', () => {
   const authStore = useAuthStore()
   const searchterm = ref('')
   const patients = ref([])
+
+  const formErrors = ref({
+    email: '',
+    phone: '',
+    duplicate: '',
+  })
+
+  const clearFormErrors = () => {
+    formErrors.value = { email: '', phone: '', duplicate: '' }
+  }
 
   const getHeaders = () => {
     const token = localStorage.getItem('token')
@@ -16,25 +27,15 @@ export const usePatientStore = defineStore('patientStore', () => {
     }
   }
 
-  /**
-   * Normalize a patient from the API into a consistent shape that has BOTH
-   * camelCase and PascalCase keys so every part of the UI works regardless
-   * of which casing it references.
-   */
   const normalizePatient = (p) => ({
-    // Internal numeric id (always available)
     id: p.Id ?? p.id ?? null,
     Id: p.Id ?? p.id ?? null,
-
-    // Name fields — both casings
     firstname: p.Firstname ?? p.firstname ?? '',
     Firstname: p.Firstname ?? p.firstname ?? '',
     middlename: p.Middlename ?? p.middlename ?? '',
     Middlename: p.Middlename ?? p.middlename ?? '',
     lastname: p.Lastname ?? p.lastname ?? '',
     Lastname: p.Lastname ?? p.lastname ?? '',
-
-    // Contact / identity
     email: p.Email ?? p.email ?? '',
     Email: p.Email ?? p.email ?? '',
     address: p.Address ?? p.address ?? '',
@@ -43,8 +44,6 @@ export const usePatientStore = defineStore('patientStore', () => {
     Facebook: p.Facebook ?? p.facebook ?? '',
     emergencyContact: p.EmergencyContact ?? p.emergencyContact ?? '',
     EmergencyContact: p.EmergencyContact ?? p.emergencyContact ?? '',
-
-    // Auth (never sent back to UI, just kept for store completeness)
     password: p.Password ?? p.password ?? '',
     Password: p.Password ?? p.password ?? '',
   })
@@ -94,6 +93,7 @@ export const usePatientStore = defineStore('patientStore', () => {
       email: '',
       emergencyContact: '',
     }
+    clearFormErrors()
   }
 
   const isEditMode = computed(() => !!(formPatient.value.id || formPatient.value.Id))
@@ -111,6 +111,7 @@ export const usePatientStore = defineStore('patientStore', () => {
       email: patient.Email ?? patient.email ?? '',
       emergencyContact: patient.EmergencyContact ?? patient.emergencyContact ?? '',
     }
+    clearFormErrors()
   }
 
   const filteredpatients = computed(() => {
@@ -128,7 +129,6 @@ export const usePatientStore = defineStore('patientStore', () => {
     })
   })
 
-  /** Build PascalCase payload for the API */
   const buildPayload = (patient, includeId = false) => {
     const payload = {
       Firstname: patient.firstname ?? '',
@@ -178,13 +178,26 @@ export const usePatientStore = defineStore('patientStore', () => {
         p.middlename?.toLowerCase() === newPatient.middlename?.toLowerCase(),
     )
     if (patientExist) {
-      console.error(`Patient ${newPatient.firstname} ${newPatient.lastname} already exists`)
+      formErrors.value.duplicate = `A patient named ${newPatient.firstname} ${newPatient.lastname} already exists.`
       return false
     }
+    formErrors.value.duplicate = ''
     return true
   }
 
   const deletePatient = async (id) => {
+    const patientRecordStore = usePatientRecord()
+    const hasRecords = patientRecordStore.patientRecords.some(
+      (r) => String(r.patientId ?? r.PatientId) === String(id),
+    )
+    if (hasRecords) {
+      return {
+        success: false,
+        blocked: true,
+        reason: 'This patient has medical records. Please delete all records first before deleting this patient.',
+      }
+    }
+
     try {
       const response = await apiFetch(`/api/patients/${id}`, {
         method: 'DELETE',
@@ -193,10 +206,10 @@ export const usePatientStore = defineStore('patientStore', () => {
       if (!response.ok) throw new Error('Failed to delete patient')
       patients.value = patients.value.filter((p) => p.id !== id && p.Id !== id)
       console.log(`Patient with ID ${id} deleted`)
-      return true
+      return { success: true, blocked: false }
     } catch (error) {
       console.error('Error deleting patient:', error)
-      return false
+      return { success: false, blocked: false }
     }
   }
 
@@ -231,10 +244,37 @@ export const usePatientStore = defineStore('patientStore', () => {
     }
   }
 
+  const emailVerification = (patient) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (isEditMode.value) return true
+    const emailExist = patients.value.some((p) => p.email && p.email === patient.email)
+    if (patient.email && emailExist) {
+      formErrors.value.email = 'This email is already in use.'
+      return false
+    }
+    if (patient.email && !emailRegex.test(patient.email)) {
+      formErrors.value.email = 'Invalid email format.'
+      return false
+    }
+    formErrors.value.email = ''
+    return true
+  }
+
+  const phoneVerification = (newPatient) => {
+    const phoneNumber = String(newPatient.emergencyContact ?? '')
+    if (phoneNumber.length !== 11) {
+      formErrors.value.phone = 'Emergency contact must be exactly 11 digits.'
+      return false
+    }
+    formErrors.value.phone = ''
+    return true
+  }
+
   const submitPatient = async () => {
+    clearFormErrors()
     if (
-      !emailVerification(formPatient.value) ||
-      !phoneVerification(formPatient.value) ||
+      !emailVerification(formPatient.value) |
+      !phoneVerification(formPatient.value) |
       !existingPatientDetails(formPatient.value)
     ) {
       return false
@@ -250,35 +290,12 @@ export const usePatientStore = defineStore('patientStore', () => {
     return success
   }
 
-  const emailVerification = (patient) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (isEditMode.value) return true
-    const emailExist = patients.value.some((p) => p.email && p.email === patient.email)
-    if (patient.email && emailExist) {
-      console.error(`Email ${patient.email} already in use`)
-      return false
-    }
-    if (patient.email && !emailRegex.test(patient.email)) {
-      console.error(`Email ${patient.email} invalid format`)
-      return false
-    }
-    return true
-  }
-
-  const phoneVerification = (newPatient) => {
-    const phoneNumber = String(newPatient.emergencyContact ?? '')
-    if (phoneNumber.length !== 11) {
-      console.error(`Phone number should be 11 digits, got: ${phoneNumber}`)
-      return false
-    }
-    return true
-  }
-
   return {
     searchterm,
     patients,
     filteredpatients,
     formPatient,
+    formErrors,
     isEditMode,
     deletePatient,
     setFormforEdit,
@@ -286,5 +303,6 @@ export const usePatientStore = defineStore('patientStore', () => {
     resetForm,
     fetchPatients,
     normalizePatient,
+    clearFormErrors,
   }
 })
