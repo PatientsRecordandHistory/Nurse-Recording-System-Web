@@ -60,7 +60,6 @@
 
           <div class="relative z-10 flex flex-col h-full">
             <div class="mb-4 pb-4 border-b border-gray-100">
-              <!-- Name uses camelCase (normalized by store) -->
               <h3
                 class="text-lg font-bold bg-gradient-to-r from-[#2933FF] to-[#FF5451] bg-clip-text text-transparent leading-tight break-words"
               >
@@ -112,38 +111,73 @@
 
     <PatientHandlerModal v-if="showPatientModal" @modalClose="closePatientModal" />
 
-    <!-- Delete Confirmation Modal -->
+    <!-- Delete Modal -->
     <div
       v-if="showDeleteModal"
       class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 font-poppins"
     >
-      <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full border border-gray-100 p-6">
-        <div class="flex items-center gap-3 mb-4">
-          <div class="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center">
-            <i class="fa-solid fa-exclamation-triangle text-xl text-red-500"></i>
-          </div>
-          <div>
-            <h3 class="text-xl font-bold text-gray-800">Delete Patient</h3>
-            <p class="text-sm text-gray-500">This action cannot be undone</p>
-          </div>
+      <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full border border-gray-100 p-8">
+        <!-- Icon -->
+        <div
+          class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5"
+          :class="deleteModal.blocked ? 'bg-orange-50' : 'bg-red-50'"
+        >
+          <i
+            class="text-2xl"
+            :class="
+              deleteModal.blocked
+                ? 'fa-solid fa-ban text-orange-500'
+                : 'fa-solid fa-triangle-exclamation text-red-500'
+            "
+          ></i>
         </div>
-        <p class="text-gray-600 mb-6">
-          Are you sure you want to delete
-          <span class="font-semibold">
-            {{ patientToDelete?.firstname }} {{ patientToDelete?.lastname }} </span
-          >?
+
+        <!-- Title -->
+        <h3 class="text-xl font-bold text-gray-800 text-center mb-2">
+          {{ deleteModal.blocked ? 'Cannot Delete Patient' : 'Delete Patient' }}
+        </h3>
+        <p class="text-sm text-gray-500 text-center mb-6">
+          {{
+            deleteModal.blocked
+              ? 'This patient has existing medical records.'
+              : 'This action cannot be undone.'
+          }}
         </p>
-        <div class="flex justify-end gap-3">
+
+        <!-- Blocked reason -->
+        <div
+          v-if="deleteModal.blocked"
+          class="bg-orange-50 border border-orange-100 rounded-xl px-4 py-3 mb-6"
+        >
+          <p class="text-sm text-orange-600 text-center font-medium">
+            <i class="fa-solid fa-circle-info mr-1"></i>
+            Please delete all medical records for this patient first before deleting the patient.
+          </p>
+        </div>
+
+        <!-- Normal confirm message -->
+        <p v-else class="text-gray-600 text-sm text-center mb-6">
+          Are you sure you want to delete
+          <span class="font-semibold text-gray-800">
+            {{ patientToDelete?.firstname }} {{ patientToDelete?.lastname }}
+          </span>?
+        </p>
+
+        <!-- Buttons -->
+        <div class="flex gap-3">
           <button
             @click="cancelDelete"
-            class="px-6 py-3 bg-gray-100 text-gray-700 text-sm font-semibold rounded-xl transition-all hover:bg-gray-200 hover:shadow-md active:scale-95"
+            class="flex-1 py-3 bg-gray-100 text-gray-700 text-sm font-semibold rounded-xl hover:bg-gray-200 transition-all active:scale-95"
           >
-            Cancel
+            <i class="fa-solid fa-xmark mr-1"></i>
+            {{ deleteModal.blocked ? 'Close' : 'Cancel' }}
           </button>
           <button
+            v-if="!deleteModal.blocked"
             @click="handleDelete"
-            class="px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white text-sm font-semibold rounded-xl transition-all hover:shadow-lg hover:scale-105 active:scale-95"
+            class="flex-1 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white text-sm font-semibold rounded-xl hover:shadow-lg transition-all active:scale-95"
           >
+            <i class="fa-solid fa-trash mr-1"></i>
             Delete
           </button>
         </div>
@@ -156,6 +190,7 @@
 import { ref, provide } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { usePatientStore } from '@/stores/patientsStore'
+import { usePatientRecord } from '@/stores/patientRecord'
 import { useAuthStore } from '@/stores/authStore'
 import SidebarComponent from '@/components/SidebarComponent.vue'
 import PatientHandlerModal from '@/modals/PatientHandler.vue'
@@ -172,6 +207,7 @@ provide('authStore', authStore)
 const showPatientModal = ref(false)
 const showDeleteModal = ref(false)
 const patientToDelete = ref(null)
+const deleteModal = ref({ blocked: false, reason: '' })
 
 const patientsrecord = (id) => router.push({ name: 'patientrecords', params: { id } })
 
@@ -191,12 +227,17 @@ const closePatientModal = () => {
 
 const confirmDelete = (patient) => {
   patientToDelete.value = patient
+  const patientRecordStore = usePatientRecord()  // add this import too
+  const hasRecords = patientRecordStore.patientRecords.some(
+    (r) => String(r.patientId ?? r.PatientId) === String(patient.id ?? patient.Id)
+  )
+  deleteModal.value = { blocked: hasRecords, reason: '' }
   showDeleteModal.value = true
 }
-
 const cancelDelete = () => {
   patientToDelete.value = null
   showDeleteModal.value = false
+  deleteModal.value = { blocked: false, reason: '' }
 }
 
 const handleDelete = async () => {
