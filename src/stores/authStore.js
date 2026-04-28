@@ -2,9 +2,6 @@ import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import { apiFetch } from '@/api.js'
 
-/**
- * Decode a JWT and return its payload, or null if malformed.
- */
 function decodeJwt(token) {
   try {
     const base64Url = token.split('.')[1]
@@ -21,13 +18,10 @@ function decodeJwt(token) {
   }
 }
 
-/**
- * Returns true if the JWT token is expired (or invalid).
- */
 function isTokenExpired(token) {
   if (!token) return true
   const payload = decodeJwt(token)
-  if (!payload?.exp) return false // no exp claim → treat as non-expiring
+  if (!payload?.exp) return false
   return Date.now() >= payload.exp * 1000
 }
 
@@ -38,16 +32,12 @@ export const useAuthStore = defineStore('authStore', () => {
   const nurse = ref(storedNurse ? JSON.parse(storedNurse) : null)
   const token = ref(storedToken || null)
 
-  const formLogin = ref({
-    email: '',
-    password: '',
-  })
+  const formLogin = ref({ email: '', password: '' })
 
   const resetFormLogin = () => {
     formLogin.value = { email: '', password: '' }
   }
 
-  /** Clears session state without hitting the server */
   const clearSession = () => {
     token.value = null
     nurse.value = null
@@ -56,22 +46,12 @@ export const useAuthStore = defineStore('authStore', () => {
     localStorage.removeItem('nurseId')
   }
 
-  /**
-   * isAuthenticated — pure computed, no side effects.
-   * false if no nurse data OR if the stored token is expired.
-   */
   const isAuthenticated = computed(() => {
     if (!nurse.value) return false
     if (isTokenExpired(token.value)) return false
     return true
   })
 
-  /**
-   * Watcher handles clearing a stale session as a side effect.
-   * Kept separate from the computed so that clearSession() is never called
-   * multiple times during app boot when many stores read isAuthenticated
-   * simultaneously through their own immediate watchers.
-   */
   watch(isAuthenticated, (isAuth) => {
     if (!isAuth && (nurse.value || token.value)) {
       clearSession()
@@ -80,45 +60,11 @@ export const useAuthStore = defineStore('authStore', () => {
 
   const getToken = computed(() => token.value)
 
-  /**
-   * Central fetch wrapper used by all stores.
-   * - Injects the Authorization header automatically.
-   * - On 401 it clears the session and reloads to /login.
-   */
-  const apiFetch = async (url, options = {}) => {
-    const currentToken = localStorage.getItem('token')
-
-    // Pre-flight expiry check
-    if (currentToken && isTokenExpired(currentToken)) {
-      clearSession()
-      window.location.href = '/login'
-      return null
-    }
-
-    const headers = {
-      'Content-Type': 'application/json',
-      ...(currentToken ? { Authorization: `Bearer ${currentToken}` } : {}),
-      ...(options.headers ?? {}),
-    }
-
-    const fullUrl = `${import.meta.env.VITE_API_BASE_URL}${url}`
-    const response = await apiFetch(fullUrl, { ...options, headers })
-
-    if (response.status === 401) {
-      clearSession()
-      window.location.href = '/login'
-      return null
-    }
-
-    return response
-  }
-
   const login = async () => {
     try {
       console.log('Login attempt:', formLogin.value)
-      const response = await apiFetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/login`, {
+      const response = await apiFetch('/api/auth/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formLogin.value),
       })
       console.log('Response status:', response.status)
@@ -152,10 +98,7 @@ export const useAuthStore = defineStore('authStore', () => {
 
   const logout = async () => {
     try {
-      await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/logout`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      })
+      await apiFetch('/api/auth/logout', { method: 'POST' })
     } catch (error) {
       console.error('Logout error', error)
     } finally {
@@ -163,10 +106,6 @@ export const useAuthStore = defineStore('authStore', () => {
     }
   }
 
-  /**
-   * Start a periodic check (every 60 s) that kicks the user out the moment
-   * their token expires while the tab is open.
-   */
   const startExpiryWatcher = () => {
     const interval = setInterval(() => {
       const t = localStorage.getItem('token')
@@ -189,7 +128,6 @@ export const useAuthStore = defineStore('authStore', () => {
     logout,
     resetFormLogin,
     clearSession,
-    apiFetch,
     startExpiryWatcher,
     isTokenExpired,
   }
