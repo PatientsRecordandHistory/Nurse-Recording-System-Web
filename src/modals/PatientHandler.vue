@@ -33,6 +33,18 @@
       </div>
 
       <form @submit.prevent="submitHandler" class="p-6 space-y-5">
+
+        <!-- Duplicate patient error banner -->
+        <div
+          v-if="store.formErrors.duplicate"
+          class="bg-red-50 border border-red-100 rounded-xl px-4 py-3"
+        >
+          <p class="text-sm text-red-600 font-medium flex items-center gap-2">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            {{ store.formErrors.duplicate }}
+          </p>
+        </div>
+
         <div class="grid grid-cols-2 gap-5">
           <div class="form-group">
             <label
@@ -108,7 +120,12 @@
             autocomplete="off"
             required
             class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#2933FF]/50 focus:border-transparent transition-all duration-300 text-gray-800 placeholder-gray-400"
+            :class="store.formErrors.email ? 'border-red-400 focus:ring-red-400/50' : ''"
           />
+          <p v-if="store.formErrors.email" class="text-red-500 text-xs mt-1.5 flex items-center gap-1">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            {{ store.formErrors.email }}
+          </p>
         </div>
 
         <div class="form-group">
@@ -128,7 +145,12 @@
             required
             maxlength="11"
             class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#2933FF]/50 focus:border-transparent transition-all duration-300 text-gray-800 placeholder-gray-400"
+            :class="store.formErrors.phone ? 'border-red-400 focus:ring-red-400/50' : ''"
           />
+          <p v-if="store.formErrors.phone" class="text-red-500 text-xs mt-1.5 flex items-center gap-1">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            {{ store.formErrors.phone }}
+          </p>
         </div>
 
         <div class="form-group">
@@ -195,6 +217,7 @@ const store = usePatientStore()
 const emit = defineEmits(['modalClose'])
 
 const closeModal = () => {
+  store.clearFormErrors()
   emit('modalClose')
 }
 
