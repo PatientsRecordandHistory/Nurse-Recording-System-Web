@@ -335,7 +335,8 @@ const cancelDelete = () => {
 
 const handleDelete = async () => {
   if (recordToDelete.value) {
-    await patientRecord.deleteRecord(recordToDelete.value.id)
+    const id = recordToDelete.value.id ?? recordToDelete.value.Id
+    await patientRecord.deleteRecord(id)
     showDeleteModal.value = false
     recordToDelete.value = null
   }

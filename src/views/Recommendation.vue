@@ -88,6 +88,33 @@
                   <p class="font-semibold text-gray-700 mb-1">Current Treatment:</p>
                   <p class="text-gray-800">{{ printStore.records[0]?.treatment || 'Not Specified' }}</p>
                 </div>
+                <!-- Latest follow-up summary -->
+                <div v-if="printStore.latestFollowup" class="pt-3 border-t border-gray-200 col-span-2">
+                  <p class="text-xs font-bold uppercase tracking-wider text-emerald-600 mb-2 flex items-center gap-1">
+                    <i class="fa-solid fa-rotate-right"></i> Latest Follow-up
+                    <span class="text-gray-400 font-normal normal-case ml-1">
+                      {{ formatDate(printStore.latestFollowup.date) }}
+                    </span>
+                  </p>
+                  <div class="grid grid-cols-2 gap-3 text-sm">
+                    <div v-if="printStore.latestFollowup.new_symptom">
+                      <p class="font-semibold text-orange-600 mb-0.5">Updated Symptom:</p>
+                      <p class="text-gray-700">{{ printStore.latestFollowup.new_symptom }}</p>
+                    </div>
+                    <div v-if="printStore.latestFollowup.new_diagnostic">
+                      <p class="font-semibold text-orange-600 mb-0.5">Updated Diagnosis:</p>
+                      <p class="text-gray-700">{{ printStore.latestFollowup.new_diagnostic }}</p>
+                    </div>
+                    <div v-if="printStore.latestFollowup.additional_treatment" class="col-span-2">
+                      <p class="font-semibold text-emerald-700 mb-0.5">Additional Treatment:</p>
+                      <p class="text-gray-700">{{ printStore.latestFollowup.additional_treatment }}</p>
+                    </div>
+                    <div v-if="printStore.latestFollowup.notes" class="col-span-2">
+                      <p class="font-semibold text-gray-500 mb-0.5">Notes:</p>
+                      <p class="text-gray-600 italic">{{ printStore.latestFollowup.notes }}</p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
             <div v-else class="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded">
@@ -342,6 +369,41 @@ const PrintContent = defineComponent({
                     h('p', { class: 'font-semibold text-gray-700 mb-1' }, 'Current Treatment:'),
                     h('p', { class: 'text-gray-800' }, printStore.records[0]?.treatment || 'Not Specified'),
                   ]),
+                  // Latest follow-up summary
+                  printStore.latestFollowup
+                    ? h('div', { class: 'pt-4 border-t border-gray-200' }, [
+                        h('p', { class: 'text-xs font-bold uppercase tracking-wider text-emerald-600 mb-3 flex items-center gap-1' }, [
+                          h('i', { class: 'fa-solid fa-rotate-right' }),
+                          ` Latest Follow-up — ${formatDate(printStore.latestFollowup.date)}`,
+                        ]),
+                        h('div', { class: 'grid grid-cols-2 gap-3 text-sm' }, [
+                          printStore.latestFollowup.new_symptom
+                            ? h('div', [
+                                h('p', { class: 'font-semibold text-orange-600 mb-0.5' }, 'Updated Symptom:'),
+                                h('p', { class: 'text-gray-800' }, printStore.latestFollowup.new_symptom),
+                              ])
+                            : null,
+                          printStore.latestFollowup.new_diagnostic
+                            ? h('div', [
+                                h('p', { class: 'font-semibold text-orange-600 mb-0.5' }, 'Updated Diagnosis:'),
+                                h('p', { class: 'text-gray-800' }, printStore.latestFollowup.new_diagnostic),
+                              ])
+                            : null,
+                          printStore.latestFollowup.additional_treatment
+                            ? h('div', { class: 'col-span-2' }, [
+                                h('p', { class: 'font-semibold text-emerald-700 mb-0.5' }, 'Additional Treatment:'),
+                                h('p', { class: 'text-gray-800' }, printStore.latestFollowup.additional_treatment),
+                              ])
+                            : null,
+                          printStore.latestFollowup.notes
+                            ? h('div', { class: 'col-span-2' }, [
+                                h('p', { class: 'font-semibold text-gray-500 mb-0.5' }, 'Notes:'),
+                                h('p', { class: 'text-gray-600 italic' }, printStore.latestFollowup.notes),
+                              ])
+                            : null,
+                        ]),
+                      ])
+                    : null,
                 ]),
               ])
             : h('div', { class: 'bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded' }, [
@@ -462,7 +524,8 @@ const PrintContent = defineComponent({
 
 onMounted(() => {
   const patientId = Number(route.params.patientId)
-  printStore.setPrintData(patientId, null)
+  const recordId = route.params.recordId ? Number(route.params.recordId) : null
+  printStore.setPrintData(patientId, recordId)
 })
 
 onUnmounted(() => {
@@ -471,6 +534,15 @@ onUnmounted(() => {
 
 const goBack = () => router.back()
 const print = () => printStore.printDocument()
+
+const formatDate = (dateString) => {
+  if (!dateString) return 'N/A'
+  return new Date(dateString).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
+}
 </script>
 
 <style scoped>

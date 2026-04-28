@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, onUnmounted } from 'vue'
 import { useAlarmStore } from '@/stores/alarmStore.js'
-import NurseCallModal from '@/components/NurseCallModal.vue'
+import NurseCallModal from '@/modals/NurseCallModal.vue'
 
 const alarmStore = useAlarmStore()   // ← this was missing
 

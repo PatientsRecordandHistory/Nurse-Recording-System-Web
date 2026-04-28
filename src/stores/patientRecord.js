@@ -34,25 +34,26 @@ export const usePatientRecord = defineStore('patientRecord', () => {
     Treatment: r.Treatment ?? r.treatment ?? '',
     notes: r.notes ?? r.Notes ?? '',
     Notes: r.Notes ?? r.notes ?? '',
-    closed: Boolean(r.closed ?? r.Closed ?? false),
-    Closed: Boolean(r.Closed ?? r.closed ?? false),
-    status: r.status ?? r.Status ?? '',
-    Status: r.Status ?? r.status ?? '',
+    status: r.Status ?? r.status ?? 'Open',
+    Status: r.Status ?? r.status ?? 'Open',
+    closed: (r.Status ?? r.status) === 'Closed',
   })
 
-  const buildRecordPayload = (record, idOverride = null) => ({
-    Id: idOverride ?? Number(record.Id ?? record.id ?? 0),
-    RecordId: record.RecordId ?? record.recordId ?? '',
-    PatientId: Number(record.PatientId ?? record.patientId ?? 0),
-    Patient: record.Patient ?? record.patient ?? { Id: Number(record.PatientId ?? record.patientId ?? 0) },
-    Date: record.Date ?? record.date ?? null,
-    Diagnosis: record.Diagnosis ?? record.diagnosis ?? '',
-    Symptom: record.Symptom ?? record.symptom ?? '',
-    Treatment: record.Treatment ?? record.treatment ?? '',
-    Notes: record.Notes ?? record.notes ?? '',
-    Closed: Boolean(record.closed ?? record.Closed ?? false),
-    Status: record.Status ?? record.status ?? '',
-  })
+  const buildRecordPayload = (record, idOverride = null) => {
+    const patientId = Number(record.PatientId ?? record.patientId ?? 0)
+    return {
+      Id: idOverride ?? Number(record.Id ?? record.id ?? 0),
+      RecordId: record.RecordId ?? record.recordId ?? '',
+      PatientId: patientId,
+      Patient: { Id: patientId },
+      Date: record.Date ?? record.date ?? null,
+      Diagnosis: record.Diagnosis ?? record.diagnosis ?? '',
+      Symptom: record.Symptom ?? record.symptom ?? '',
+      Treatment: record.Treatment ?? record.treatment ?? '',
+      Notes: record.Notes ?? record.notes ?? '',
+      Status: (record.closed ?? record.Closed) ? 'Closed' : 'Open',
+    }
+  }
 
   const fetchRecords = async () => {
     try {
@@ -101,10 +102,16 @@ export const usePatientRecord = defineStore('patientRecord', () => {
     }
   }
 
-  const isEditMode = computed(() => !!recordForm.value.id)
+  const isEditMode = computed(() => !!(recordForm.value.id ?? recordForm.value.Id))
 
   const setFormforEdit = (record) => {
-    recordForm.value = { ...record }
+    const normalized = normalizeRecord(record)
+    recordForm.value = {
+      ...normalized,
+      // Guarantee lowercase id is always a number so isEditMode and editRecord work
+      id: Number(normalized.id ?? normalized.Id),
+      patientId: String(normalized.patientId ?? normalized.PatientId ?? ''),
+    }
   }
 
   const getpatient = (id) =>
@@ -189,7 +196,8 @@ export const usePatientRecord = defineStore('patientRecord', () => {
     patientRecords.value[index] = {
       ...patientRecords.value[index],
       closed: newClosed,
-      Closed: newClosed,
+      status: newClosed ? 'Closed' : 'Open',
+      Status: newClosed ? 'Closed' : 'Open',
     }
 
     const payload = buildRecordPayload(patientRecords.value[index], serverId)
@@ -205,7 +213,8 @@ export const usePatientRecord = defineStore('patientRecord', () => {
         patientRecords.value[index] = {
           ...patientRecords.value[index],
           closed: !newClosed,
-          Closed: !newClosed,
+          status: !newClosed ? 'Closed' : 'Open',
+          Status: !newClosed ? 'Closed' : 'Open',
         }
         console.error('Failed to toggle record closed status')
         return false
@@ -224,14 +233,19 @@ export const usePatientRecord = defineStore('patientRecord', () => {
   }
 
   const deleteRecord = async (id) => {
+    const serverId = Number(id ?? 0)
+    if (!serverId) {
+      console.error('deleteRecord: invalid id', id)
+      return false
+    }
     try {
-      const response = await fetch(`/api/PatientRecords/${id}`, {
+      const response = await fetch(`/api/PatientRecords/${serverId}`, {
         method: 'DELETE',
         headers: getHeaders(),
       })
       if (!response.ok) throw new Error('Failed to delete record')
       patientRecords.value = patientRecords.value.filter(
-        (r) => Number(r.id ?? r.Id) !== Number(id),
+        (r) => Number(r.id ?? r.Id) !== serverId,
       )
       return true
     } catch (error) {
@@ -242,7 +256,7 @@ export const usePatientRecord = defineStore('patientRecord', () => {
 
   const submitRecord = async () => {
     const success = isEditMode.value
-      ? await editRecord(recordForm.value.id, recordForm.value)
+      ? await editRecord(recordForm.value.id ?? recordForm.value.Id, recordForm.value)
       : await addRecord(recordForm.value)
     if (success) resetRecordForm()
     return success

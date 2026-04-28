@@ -3,11 +3,13 @@ import { ref, computed } from 'vue'
 import { usePatientRecord } from './patientRecord'
 import { usePatientStore } from './patientsStore'
 import { useAuthStore } from './authStore'
+import { useFollowupStore } from './FollowupStore'
 
 export const usePrintStore = defineStore('printStore', () => {
   const patientRecordStore = usePatientRecord()
   const patientStore = usePatientStore()
   const authStore = useAuthStore()
+  const followupStore = useFollowupStore()
 
   const selectedPatientId = ref(null)
   const selectedRecordId = ref(null)
@@ -23,9 +25,27 @@ export const usePrintStore = defineStore('printStore', () => {
     if (!selectedPatientId.value) return []
     const allRecords = patientRecordStore.getpatient(selectedPatientId.value)
     if (selectedRecordId.value) {
-      return allRecords.filter((r) => r.id === selectedRecordId.value)
+      return allRecords.filter((r) => String(r.id ?? r.Id) === String(selectedRecordId.value))
     }
     return allRecords
+  })
+
+  // All follow-ups for the selected patient+record, sorted oldest → newest
+  const recordFollowups = computed(() => {
+    if (!selectedPatientId.value) return []
+    return followupStore.followups
+      .filter(
+        (f) =>
+          String(f.patientId) === String(selectedPatientId.value) &&
+          (!selectedRecordId.value || String(f.recordId) === String(selectedRecordId.value)),
+      )
+      .sort((a, b) => new Date(a.date) - new Date(b.date))
+  })
+
+  // Most recent follow-up for the selected record
+  const latestFollowup = computed(() => {
+    const list = recordFollowups.value
+    return list.length ? list[list.length - 1] : null
   })
 
   // Get current nurse information — handles multiple authStore shapes
@@ -99,6 +119,8 @@ export const usePrintStore = defineStore('printStore', () => {
     selectedRecordId,
     patient,
     records,
+    recordFollowups,
+    latestFollowup,
     nurse,
     nurseDisplayName,
     nurseEmail,

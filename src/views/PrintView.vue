@@ -159,6 +159,56 @@ const PrintContent = defineComponent({
             : null,
         ]),
 
+        // Follow-up Records Section
+        h('div', { class: 'followup-records mb-12' }, [
+          h(
+            'h3',
+            { class: 'text-xl font-bold text-gray-800 mb-4 pb-2 border-b border-gray-300' },
+            'FOLLOW-UP RECORDS',
+          ),
+          printStore.recordFollowups.length > 0
+            ? h('div', { class: 'space-y-4' },
+                printStore.recordFollowups.map((fu, index) =>
+                  h('div', {
+                    class: 'p-5 border border-emerald-200 rounded-lg bg-emerald-50/40',
+                    key: fu.id,
+                  }, [
+                    h('div', { class: 'flex justify-between items-center mb-3' }, [
+                      h('span', { class: 'text-sm font-bold text-emerald-700' }, `Follow-up #${index + 1}`),
+                      h('span', { class: 'text-xs text-gray-500' }, formatDate(fu.date)),
+                    ]),
+                    h('div', { class: 'grid grid-cols-2 gap-3 text-sm' }, [
+                      fu.new_symptom
+                        ? h('div', [
+                            h('p', { class: 'font-semibold text-orange-600 mb-1' }, 'Updated Symptom:'),
+                            h('p', { class: 'text-gray-800' }, fu.new_symptom),
+                          ])
+                        : null,
+                      fu.new_diagnostic
+                        ? h('div', [
+                            h('p', { class: 'font-semibold text-orange-600 mb-1' }, 'Updated Diagnosis:'),
+                            h('p', { class: 'text-gray-800' }, fu.new_diagnostic),
+                          ])
+                        : null,
+                      fu.additional_treatment
+                        ? h('div', { class: 'col-span-2' }, [
+                            h('p', { class: 'font-semibold text-emerald-700 mb-1' }, 'Additional Treatment:'),
+                            h('p', { class: 'text-gray-800' }, fu.additional_treatment),
+                          ])
+                        : null,
+                      fu.notes
+                        ? h('div', { class: 'col-span-2' }, [
+                            h('p', { class: 'font-semibold text-gray-600 mb-1' }, 'Notes:'),
+                            h('p', { class: 'text-gray-700 italic' }, fu.notes),
+                          ])
+                        : null,
+                    ]),
+                  ])
+                )
+              )
+            : h('p', { class: 'text-center text-gray-400 italic py-6' }, 'No follow-up records for this visit.'),
+        ]),
+
         // Professional Statement
         h('div', { class: 'statement mb-8 p-5 bg-blue-50 border-l-4 border-blue-600 rounded' }, [
           h('p', { class: 'text-sm text-gray-700 leading-relaxed' }, [
