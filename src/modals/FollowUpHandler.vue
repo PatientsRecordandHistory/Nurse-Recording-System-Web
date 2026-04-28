@@ -32,18 +32,19 @@
 
       <div class="p-6 space-y-5">
         <!-- Date -->
-        <div class="form-group">
-          <label class="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-            <i class="fa-solid fa-calendar text-[#2933FF]"></i>
-            Follow-up Date:
-          </label>
-          <input
-            type="date"
-            v-model="store.FollowupForm.date"
-            required
-            class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#2933FF]/50 focus:border-transparent transition-all text-gray-800"
-          />
-        </div>
+<div class="form-group">
+  <label class="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+    <i class="fa-solid fa-calendar text-[#2933FF]"></i>
+    Follow-up Date:
+  </label>
+  <input
+    type="date"
+    v-model="store.FollowupForm.date"
+    :min="minDate"
+    required
+    class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#2933FF]/50 focus:border-transparent transition-all text-gray-800"
+  />
+</div>
 
         <!-- ── Previous context (read-only) ─────────────────────────────── -->
         <div class="bg-gray-50 rounded-xl border border-gray-200 p-5 space-y-4">
@@ -220,6 +221,14 @@ const previousContext = computed(() => {
     diagnosis: record?.diagnosis || '',
     treatment: record?.treatment || '',
   }
+})
+
+const minDate = computed(() => {
+  const today = new Date()
+  const year = today.getFullYear()
+  const month = String(today.getMonth() + 1).padStart(2, '0')
+  const day = String(today.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 })
 
 const closeModal = () => emit('modalClose')
