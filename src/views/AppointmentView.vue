@@ -142,288 +142,163 @@
           <p class="text-gray-400 font-medium">No appointments found</p>
         </div>
 
-        <!-- ── Combined Appointment + Follow-up Cards Grid ────────────────────── -->
-        <!--
-          Layout intent:
-          Each appointment renders as its own card.
-          Any active (non-expired) follow-ups linked to that appointment's patient
-          render IMMEDIATELY AFTER as sibling peer cards — same grid row, visually
-          connected with a left-border accent so you can tell they belong together.
-          Past follow-ups are NOT shown (date < today).
-        -->
-        <div class="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-          <template v-for="appointment in displayedAppointments" :key="appointment.id">
+        <!-- ── Appointment + Follow-up List ─────────────────────────────────── -->
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
 
-            <!-- ── Appointment Card ──────────────────────────────────────────── -->
-            <div
-              class="group bg-white rounded-2xl border shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden relative"
-              :class="[
-                isExpired(appointment) ? 'border-gray-200 opacity-80' : 'border-gray-100',
-                isImminent(appointment) ? 'ring-2 ring-amber-300 ring-offset-1' : '',
-              ]"
-            >
-              <!-- Closed overlay tint -->
-              <div
-                v-if="isExpired(appointment)"
-                class="absolute inset-0 bg-gray-50/40 pointer-events-none z-0 rounded-2xl"
-              ></div>
+          <!-- Table header -->
+          <div class="grid items-center gap-4 px-5 py-2.5 border-b border-gray-100 bg-gray-50/70" style="grid-template-columns: 2rem 1fr 11rem 7rem 6rem 8.5rem;">
+            <div></div>
+            <span class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Reason / Patient</span>
+            <span class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Date</span>
+            <span class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Time</span>
+            <span class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Status</span>
+            <span class="text-[10px] font-bold uppercase tracking-widest text-gray-400 text-right">Actions</span>
+          </div>
 
-              <!-- Imminent pulse dot -->
+          <div class="divide-y divide-gray-100">
+            <template v-for="row in flatRows" :key="row._type === 'followup' ? `fu-${row.id}` : row.id">
+
+              <!-- ── Appointment Row ────────────────────────────────────────── -->
               <div
-                v-if="isImminent(appointment)"
-                class="absolute top-3 left-3 z-20"
+                v-if="row._type === 'appointment'"
+                class="group grid items-center gap-4 px-5 py-3.5 hover:bg-gray-50 transition-colors duration-150 relative"
+                style="grid-template-columns: 2rem 1fr 11rem 7rem 6rem 8.5rem;"
+                :class="[
+                  isExpired(row._self) ? 'opacity-60' : '',
+                  isImminent(row._self) ? 'bg-amber-50/60 hover:bg-amber-50' : '',
+                ]"
               >
-                <span class="relative flex h-2.5 w-2.5">
-                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                  <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
-                </span>
-              </div>
+                <!-- Left accent bar -->
+                <div
+                  class="absolute left-0 top-0 bottom-0 w-0.5"
+                  :class="
+                    isExpired(row._self)
+                      ? 'bg-gray-300'
+                      : isImminent(row._self)
+                        ? 'bg-amber-400'
+                        : 'bg-gradient-to-b from-[#2933FF] to-[#FF5451] opacity-0 group-hover:opacity-100 transition-opacity'
+                  "
+                ></div>
 
-              <!-- Top accent -->
-              <div
-                class="h-1.5 w-full transition-all duration-300"
-                :class="
-                  isExpired(appointment)
-                    ? 'bg-gray-200'
-                    : isImminent(appointment)
-                      ? 'bg-gradient-to-r from-amber-400 to-orange-400'
-                      : 'bg-gradient-to-r from-[#2933FF] to-[#FF5451] opacity-0 group-hover:opacity-100'
-                "
-              ></div>
-
-              <div class="relative z-10 p-6">
-                <!-- Header -->
-                <div class="flex items-start justify-between mb-4">
-                  <div class="flex items-center gap-3 min-w-0 flex-1">
-                    <div
-                      class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                      :class="
-                        isExpired(appointment)
-                          ? 'bg-gray-100'
-                          : isImminent(appointment)
-                            ? 'bg-amber-100'
-                            : 'bg-gradient-to-br from-[#2933FF]/10 to-[#FF5451]/10'
-                      "
-                    >
-                      <i
-                        class="fa-solid fa-calendar-days text-sm"
-                        :class="
-                          isExpired(appointment)
-                            ? 'text-gray-400'
-                            : isImminent(appointment)
-                              ? 'text-amber-500'
-                              : 'text-[#2933FF]'
-                        "
-                      ></i>
-                    </div>
-                    <div class="min-w-0">
-                      <h2
-                        class="font-bold text-sm leading-tight truncate"
-                        :class="isExpired(appointment) ? 'text-gray-500' : 'text-gray-800'"
-                      >
-                        {{ appointment.reason }}
-                      </h2>
-                      <p class="text-xs text-gray-400 mt-0.5 font-mono">
-                        {{ appointment.appointmentId || `#${appointment.id}` }}
-                      </p>
-                    </div>
-                  </div>
-
-                  <!-- Badges + actions -->
-                  <div class="flex items-center gap-1.5 ml-2 flex-shrink-0">
-                    <!-- Imminent badge -->
-                    <span
-                      v-if="isImminent(appointment)"
-                      class="text-xs font-bold px-2 py-1 rounded-full bg-amber-100 text-amber-700"
-                    >
-                      <i class="fa-solid fa-bell mr-0.5 text-[10px]"></i>
-                      Soon
-                    </span>
-
-                    <span
-                      v-else
-                      class="text-xs font-bold px-2 py-1 rounded-full"
-                      :class="
-                        isExpired(appointment)
-                          ? 'bg-gray-100 text-gray-500'
-                          : 'bg-green-50 text-green-700'
-                      "
-                    >
-                      <i
-                        class="mr-0.5 text-[10px]"
-                        :class="isExpired(appointment) ? 'fa-solid fa-lock' : 'fa-solid fa-clock'"
-                      ></i>
-                      {{ isExpired(appointment) ? 'Closed' : 'Upcoming' }}
-                    </span>
-
-                    <button
-                      @click="handleEdit(appointment)"
-                      :disabled="isExpired(appointment)"
-                      class="w-8 h-8 rounded-lg bg-blue-50 hover:bg-blue-100 flex items-center justify-center transition-all hover:scale-110 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed"
-                      title="Edit"
-                    >
-                      <i class="fa-solid fa-pen text-[11px] text-[#2933FF]"></i>
-                    </button>
-                    <button
-                      @click="confirmDelete(appointment)"
-                      class="w-8 h-8 rounded-lg bg-red-50 hover:bg-red-100 flex items-center justify-center transition-all hover:scale-110 active:scale-95"
-                      title="Delete"
-                    >
-                      <i class="fa-solid fa-trash text-[11px] text-red-500"></i>
-                    </button>
-                  </div>
+                <!-- Col 1: Icon -->
+                <div
+                  class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 relative"
+                  :class="
+                    isExpired(row._self)
+                      ? 'bg-gray-100'
+                      : isImminent(row._self)
+                        ? 'bg-amber-100'
+                        : 'bg-gradient-to-br from-[#2933FF]/10 to-[#FF5451]/10'
+                  "
+                >
+                  <span v-if="isImminent(row._self)" class="absolute -top-1 -right-1 flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                  </span>
+                  <i class="fa-solid fa-calendar-days text-xs"
+                    :class="isExpired(row._self) ? 'text-gray-400' : isImminent(row._self) ? 'text-amber-500' : 'text-[#2933FF]'"
+                  ></i>
                 </div>
 
-                <!-- Details -->
-                <div class="space-y-2.5">
-                  <!-- Patient -->
-                  <div class="flex items-center gap-3 py-2.5 px-3 rounded-xl bg-gray-50">
-                    <i
-                      class="fa-solid fa-user text-[11px] w-4 text-center"
-                      :class="isExpired(appointment) ? 'text-gray-400' : 'text-[#2933FF]'"
-                    ></i>
-                    <div>
-                      <p class="text-[10px] text-gray-400 font-semibold uppercase tracking-wide">
-                        Patient
-                      </p>
-                      <p class="text-sm font-semibold text-gray-700">
-                        {{ appointment._patientName || getPatientName(appointment.patientId) }}
-                      </p>
-                    </div>
-                  </div>
-
-                  <!-- Date + Time -->
-                  <div class="grid grid-cols-2 gap-2">
-                    <div class="flex items-center gap-2.5 py-2.5 px-3 rounded-xl bg-gray-50">
-                      <i
-                        class="fa-solid fa-calendar text-[11px]"
-                        :class="isExpired(appointment) ? 'text-gray-400' : 'text-[#2933FF]'"
-                      ></i>
-                      <div>
-                        <p class="text-[10px] text-gray-400 font-semibold uppercase tracking-wide">
-                          Date
-                        </p>
-                        <p class="text-sm font-semibold text-gray-700">
-                          {{ formatDate(appointment.date) }}
-                        </p>
-                      </div>
-                    </div>
-                    <div class="flex items-center gap-2.5 py-2.5 px-3 rounded-xl bg-gray-50">
-                      <i
-                        class="fa-solid fa-clock text-[11px]"
-                        :class="isExpired(appointment) ? 'text-gray-400' : 'text-[#FF5451]'"
-                      ></i>
-                      <div>
-                        <p class="text-[10px] text-gray-400 font-semibold uppercase tracking-wide">
-                          Time
-                        </p>
-                        <p class="text-sm font-semibold text-gray-700">
-                          {{ formatTime(appointment.time) }}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+                <!-- Col 2: Reason + Patient -->
+                <div class="min-w-0">
+                  <p class="text-sm font-bold truncate" :class="isExpired(row._self) ? 'text-gray-500' : 'text-gray-800'">
+                    {{ row.reason }}
+                  </p>
+                  <p class="text-xs text-gray-400 truncate flex items-center gap-1 mt-0.5">
+                    <i class="fa-solid fa-user text-[9px]" :class="isExpired(row._self) ? 'text-gray-300' : 'text-[#2933FF]'"></i>
+                    {{ row._patientName || getPatientName(row.patientId) }}
+                    <span class="font-mono text-[10px] ml-1">{{ row.appointmentId || `#${row.id}` }}</span>
+                  </p>
                 </div>
-              </div>
-            </div>
-            <!-- ── End Appointment Card ──────────────────────────────────────── -->
 
-            <!-- ── Follow-up Peer Cards ─────────────────────────────────────────
-              These render as sibling cards in the same grid — NOT inside the
-              appointment card. Only shows follow-ups whose date is today or
-              in the future (past ones are filtered out in getActiveFollowups).
-            ──────────────────────────────────────────────────────────────────── -->
-            <div
-              v-for="followup in getActiveFollowups(appointment)"
-              :key="`fu-${followup.id}`"
-              @click="navigateToFollowup(appointment, followup)"
-              class="group bg-white rounded-2xl border border-l-4 border-emerald-200 border-l-emerald-400 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden cursor-pointer relative"
-            >
-              <!-- Top accent -->
-              <div class="h-1.5 w-full bg-gradient-to-r from-emerald-400 to-teal-400 opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
+                <!-- Col 3: Date -->
+                <div class="text-sm text-gray-600 flex items-center gap-1.5">
+                  <i class="fa-solid fa-calendar text-[10px]" :class="isExpired(row._self) ? 'text-gray-300' : 'text-[#2933FF]'"></i>
+                  {{ formatDate(row.date) }}
+                </div>
 
-              <div class="p-6">
-                <!-- Header -->
-                <div class="flex items-start justify-between mb-4">
-                  <div class="flex items-center gap-3 min-w-0 flex-1">
-                    <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center flex-shrink-0">
-                      <i class="fa-solid fa-rotate-right text-emerald-500 text-sm"></i>
-                    </div>
-                    <div class="min-w-0">
-                      <h2 class="font-bold text-sm leading-tight truncate text-gray-800">
-                        {{ followup.new_diagnostic || followup.diagnosis || 'Follow-up Visit' }}
-                      </h2>
-                      <p class="text-xs text-emerald-600 mt-0.5 font-semibold">
-                        Follow-up · {{ appointment._patientName || getPatientName(appointment.patientId) }}
-                      </p>
-                    </div>
-                  </div>
-                  <span class="text-xs font-bold px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 flex-shrink-0 ml-2">
-                    <i class="fa-solid fa-rotate-right mr-0.5 text-[10px]"></i>
-                    Follow-up
+                <!-- Col 4: Time -->
+                <div class="text-sm text-gray-600 flex items-center gap-1.5">
+                  <i class="fa-solid fa-clock text-[10px]" :class="isExpired(row._self) ? 'text-gray-300' : 'text-[#FF5451]'"></i>
+                  {{ formatTime(row.time) }}
+                </div>
+
+                <!-- Col 5: Status badge -->
+                <div>
+                  <span v-if="isImminent(row._self)" class="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">
+                    <i class="fa-solid fa-bell mr-0.5 text-[10px]"></i>Soon
+                  </span>
+                  <span v-else class="text-xs font-bold px-2 py-0.5 rounded-full"
+                    :class="isExpired(row._self) ? 'bg-gray-100 text-gray-500' : 'bg-green-50 text-green-700'"
+                  >
+                    <i class="mr-0.5 text-[10px]" :class="isExpired(row._self) ? 'fa-solid fa-lock' : 'fa-solid fa-clock'"></i>
+                    {{ isExpired(row._self) ? 'Closed' : 'Upcoming' }}
                   </span>
                 </div>
 
-                <!-- Details -->
-                <div class="space-y-2.5">
-                  <!-- Symptom / New Symptom -->
-                  <div
-                    v-if="followup.new_symptom || followup.symptom"
-                    class="flex items-start gap-3 py-2.5 px-3 rounded-xl bg-emerald-50/50"
-                  >
-                    <i class="fa-solid fa-stethoscope text-[11px] w-4 text-center text-emerald-500 mt-0.5"></i>
-                    <div class="min-w-0">
-                      <p class="text-[10px] text-emerald-600 font-semibold uppercase tracking-wide">Symptom</p>
-                      <p class="text-sm font-semibold text-gray-700 truncate">
-                        {{ followup.new_symptom || followup.symptom }}
-                      </p>
-                    </div>
-                  </div>
-
-                  <!-- Treatment -->
-                  <div
-                    v-if="followup.additional_treatment || followup.treatment"
-                    class="flex items-start gap-3 py-2.5 px-3 rounded-xl bg-gray-50"
-                  >
-                    <i class="fa-solid fa-pills text-[11px] w-4 text-center text-teal-500 mt-0.5"></i>
-                    <div class="min-w-0">
-                      <p class="text-[10px] text-gray-400 font-semibold uppercase tracking-wide">Treatment</p>
-                      <p class="text-sm font-semibold text-gray-700 truncate">
-                        {{ followup.additional_treatment || followup.treatment }}
-                      </p>
-                    </div>
-                  </div>
-
-                  <!-- Date -->
-                  <div class="flex items-center gap-2.5 py-2.5 px-3 rounded-xl bg-gray-50">
-                    <i class="fa-solid fa-calendar-check text-[11px] text-emerald-500"></i>
-                    <div>
-                      <p class="text-[10px] text-gray-400 font-semibold uppercase tracking-wide">Follow-up Date</p>
-                      <p class="text-sm font-semibold text-gray-700">{{ formatDate(followup.date) }}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Notes preview -->
-                <div
-                  v-if="followup.notes"
-                  class="mt-3 pt-3 border-t border-gray-100"
-                >
-                  <p class="text-xs text-gray-400 line-clamp-2">{{ followup.notes }}</p>
-                </div>
-
-                <!-- View full record hint -->
-                <div class="mt-3 pt-3 border-t border-emerald-100 flex items-center justify-between">
-                  <span class="text-[11px] text-gray-400">Click to view full record</span>
-                  <i class="fa-solid fa-arrow-right text-[10px] text-emerald-400 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all"></i>
+                <!-- Col 6: Actions -->
+                <div class="flex items-center gap-2 justify-end">
+                  <button @click="handleEdit(row._self)" :disabled="isExpired(row._self)"
+                    class="w-8 h-8 rounded-lg bg-blue-50 hover:bg-blue-100 flex items-center justify-center transition-all hover:scale-110 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed"
+                    title="Edit"><i class="fa-solid fa-pen text-[11px] text-[#2933FF]"></i></button>
+                  <button @click="confirmDelete(row._self)"
+                    class="w-8 h-8 rounded-lg bg-red-50 hover:bg-red-100 flex items-center justify-center transition-all hover:scale-110 active:scale-95"
+                    title="Delete"><i class="fa-solid fa-trash text-[11px] text-red-500"></i></button>
                 </div>
               </div>
-            </div>
-            <!-- ── End Follow-up Peer Cards ──────────────────────────────────── -->
+              <!-- ── End Appointment Row ─────────────────────────────────────── -->
 
-          </template>
+              <!-- ── Follow-up Row ───────────────────────────────────────────── -->
+              <div
+                v-else-if="row._type === 'followup'"
+                @click="navigateToFollowup(row._appointment, row)"
+                class="group grid items-center gap-4 px-5 py-3 bg-emerald-50/20 hover:bg-emerald-50/50 transition-colors duration-150 cursor-pointer border-l-2 border-emerald-300"
+                style="grid-template-columns: 2rem 1fr 11rem 7rem 6rem 8.5rem;"
+              >
+                <!-- Icon -->
+                <div class="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center flex-shrink-0 ml-5">
+                  <i class="fa-solid fa-rotate-right text-emerald-500 text-[10px]"></i>
+                </div>
+
+                <!-- Reason + Patient -->
+                <div class="min-w-0">
+                  <p class="text-sm font-semibold text-gray-700 truncate">
+                    {{ row.new_diagnostic || row.diagnosis || 'Follow-up Visit' }}
+                  </p>
+                  <p class="text-xs text-emerald-600 truncate flex items-center gap-1 mt-0.5">
+                    <i class="fa-solid fa-stethoscope text-[9px]"></i>
+                    {{ row.new_symptom || row.symptom || (row._appointment._patientName || getPatientName(row._appointment.patientId)) }}
+                  </p>
+                </div>
+
+                <!-- Date -->
+                <div class="text-sm text-gray-500 flex items-center gap-1.5">
+                  <i class="fa-solid fa-calendar-check text-[10px] text-emerald-500"></i>
+                  {{ formatDate(row.date) }}
+                </div>
+
+                <!-- Time -->
+                <div></div>
+
+                <!-- Badge -->
+                <div>
+                  <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700">
+                    <i class="fa-solid fa-rotate-right mr-0.5 text-[10px]"></i>Follow-up
+                  </span>
+                </div>
+
+                <!-- Arrow -->
+                <div class="flex justify-end">
+                  <i class="fa-solid fa-arrow-right text-[10px] text-emerald-400 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all"></i>
+                </div>
+              </div>
+              <!-- ── End Follow-up Row ───────────────────────────────────────── -->
+
+            </template>
+          </div>
         </div>
-        <!-- ── End Combined Grid ──────────────────────────────────────────────── -->
+        <!-- ── End List ───────────────────────────────────────────────────────── -->
 
       </div>
     </div>
@@ -502,8 +377,13 @@ const showDeleteModal = ref(false)
 const appointmentToDelete = ref(null)
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-const isExpired = (appointment) =>
-  appointment.status === 'Closed' || appointment.Status === 'Closed'
+const isExpired = (appointment) => {
+  if (appointment.status === 'Closed' || appointment.Status === 'Closed') return true
+  const date = appointment.date ?? appointment.Date ?? ''
+  const time = appointment.time ?? appointment.Time ?? '00:00'
+  if (!date) return false
+  return new Date(`${date}T${time}`) < new Date()
+}
 
 const isImminent = (appointment) => {
   const id = appointment.id ?? appointment.Id
@@ -597,17 +477,55 @@ const displayedAppointments = computed(() => {
   let list = filtered.value
   if (activeFilter.value === 'Upcoming') list = upcoming.value
   else if (activeFilter.value === 'Closed') list = closed.value
+  const now = new Date()
+  const isPast = (x) => {
+    if (isExpired(x)) return true
+    const dt = new Date(`${x.date ?? ''}T${x.time ?? '00:00'}`)
+    return dt < now
+  }
   return [...list].sort((a, b) => {
-    const aExp = isExpired(a)
-    const bExp = isExpired(b)
-    if (aExp !== bExp) return aExp ? 1 : -1
+    const aPast = isPast(a)
+    const bPast = isPast(b)
+    // Past / closed always sink to the bottom
+    if (aPast !== bPast) return aPast ? 1 : -1
+    // Within each group sort by date+time ascending (soonest first)
     const dateA = new Date(`${a.date ?? ''}T${a.time ?? '00:00'}`)
     const dateB = new Date(`${b.date ?? ''}T${b.time ?? '00:00'}`)
-    return aExp ? dateB - dateA : dateA - dateB
+    return dateA - dateB
   })
 })
 
 // ── Formatters ────────────────────────────────────────────────────────────────
+/**
+ * Flattened date-sorted list of appointment + follow-up rows.
+ * Follow-ups tagged with _type:'followup' and _appointment ref.
+ * Past/closed rows sink to bottom; within groups sorted by date asc.
+ */
+const flatRows = computed(() => {
+  const now = new Date()
+  const rows = []
+  for (const appt of displayedAppointments.value) {
+    rows.push({ _type: 'appointment', ...appt, _self: appt })
+    for (const fu of getActiveFollowups(appt)) {
+      rows.push({ _type: 'followup', _appointment: appt, ...fu })
+    }
+  }
+  const getDateTime = (row) => {
+    if (row._type === 'followup') return new Date(`${row.date ?? ''}T00:00`)
+    return new Date(`${row.date ?? ''}T${row.time ?? '00:00'}`)
+  }
+  const isPast = (row) => {
+    if (row._type === 'appointment' && isExpired(row._self)) return true
+    return getDateTime(row) < now
+  }
+  return rows.sort((a, b) => {
+    const aPast = isPast(a)
+    const bPast = isPast(b)
+    if (aPast !== bPast) return aPast ? 1 : -1
+    return getDateTime(a) - getDateTime(b)
+  })
+})
+
 const formatDate = (dateString) => {
   if (!dateString) return 'N/A'
   return new Date(dateString).toLocaleDateString('en-US', {
