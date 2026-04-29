@@ -11,7 +11,7 @@
           <span class="bg-gradient-to-r from-[#2933FF] to-[#FF5451] bg-clip-text text-transparent">
             {{ nurseName }}
           </span>
-          👋
+          !
         </h1>
         <p class="text-sm text-gray-400">
           Here's what's happening at the clinic today — {{ todayDate }}
